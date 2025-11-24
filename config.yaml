@@ -1,0 +1,12 @@
+update:
+  source_path: data/
+  inputs:
+    - nixpkgs
+    - nix-darwin
+    - nixos-wsl
+
+backup:
+  status_path: data/
+  profiles:
+    - local
+    - remote
