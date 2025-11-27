@@ -1,7 +1,9 @@
 import argparse
 from os import path
-import sys
+import io
 from ruamel.yaml import YAML
+from rich.console import Console
+from rich.text import Text 
 
 from modules.backup import Backup
 from modules.update import Update
@@ -21,7 +23,10 @@ def main():
         "Backups": Backup(config["backup"]).get(),
     }
 
-    yaml.dump(modules, sys.stdout)
+    console = Console()
+    s = io.StringIO()
+    yaml.dump(modules, s)
+    console.print(s.getvalue())
 
 
 if __name__ == "__main__":
