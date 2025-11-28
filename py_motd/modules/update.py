@@ -10,7 +10,7 @@ def parse_generation(g: dict) -> dict:
         datetime.fromisoformat(g["date"])
     )
 
-    current = " (current) " if g["current"] else ""
+    current = " (current) " if g["current"] else " "
 
     return {
         "ago": str(last_build)[:-7] + " ago",

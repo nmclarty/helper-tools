@@ -5,6 +5,10 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "py_motd"
 version = "0.0.1"
+dependencies = [
+    "ruamel.yaml",
+    "rich",
+]
 
 [project.scripts]
 py_motd = "py_motd.__main__:main"

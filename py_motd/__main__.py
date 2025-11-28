@@ -11,12 +11,12 @@ from .modules.update import Update
 def main():
     # cli configuration
     parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--config", help="Path to the configuration file", default="config.yaml")
+    parser.add_argument("-c", "--config", help="Path to the configuration file", default="~/.config/py_motd/config.yaml")
     args = parser.parse_args()
 
     yaml = YAML()
     yaml.indent(mapping=2, sequence=4, offset=2)
-    with open(args.config, "r") as config_file:
+    with open(path.expanduser(args.config), "r") as config_file:
         config = yaml.load(config_file)
 
     modules = {

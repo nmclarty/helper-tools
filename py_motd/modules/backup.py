@@ -8,23 +8,23 @@ class Backup:
 
     def get(self):
         output = []
-        statuses = map(self.__get_status, self.profiles)
-        status_labels = ["Failure", "Success"]
+        try:
+            statuses = map(self.__get_status, self.profiles)
+            status_labels = ["Failure", "Success"]
 
-        for status in statuses:
-            time_ago = str(self.__diff(status["time"]))[:-7]
-            success = status_labels[status["success"]]
-            output.append({status["profile"]: (f'({success}) {time_ago} ago')})
+            for status in statuses:
+                time_ago = str(self.__diff(status["time"]))[:-7]
+                success = status_labels[status["success"]]
+                output.append({status["profile"]: (f'({success}) {time_ago} ago')})
 
-        return output
+            return output
+        
+        except Exception as e:
+            return {"Error": str(e)}
     
     def __get_status(self, profile):
-        try:
-            with open(f'{self.status_path}/{profile}.status', "r") as file:
-                data = json.load(file)
-        except FileNotFoundError:
-            print("  (N/A) Backup status not found")
-            exit()
+        with open(f'{self.status_path}/{profile}.status', "r") as file:
+            data = json.load(file)
         status = data["profiles"][profile]["backup"]
         status["profile"] = profile
         return status
