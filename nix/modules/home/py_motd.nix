@@ -1,6 +1,6 @@
-{lib, inputs, config, pkgs, perSystem, ...}:
+{ lib, inputs, config, pkgs, perSystem, ... }:
 with lib;
-let 
+let
   cfg = config.programs.py_motd;
 in
 {
@@ -40,6 +40,6 @@ in
   };
   config = mkIf cfg.enable {
     home.packages = [ perSystem.py_motd.default ];
-    xdg.configFile."py_motd/config.yaml".source = (pkgs.formats.yaml {}).generate "config.yaml" cfg.settings;
+    xdg.configFile."py_motd/config.yaml".source = (pkgs.formats.yaml { }).generate "config.yaml" cfg.settings;
   };
 }
