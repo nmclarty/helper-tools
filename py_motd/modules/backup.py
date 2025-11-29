@@ -35,7 +35,7 @@ class Backup:
         :param name: The name of the profile
         :return: A tuple containing the profile name and its age
         """
-        with self.__get_profile_path(name).open() as file:
+        with self.__get_profile_path(name).open(encoding="utf-8") as file:
             data = load(file)
 
         profile = data["profiles"][name]["backup"]

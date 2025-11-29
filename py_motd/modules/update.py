@@ -22,7 +22,7 @@ class Update:
 
         # load the lock file from the flake (source path)
         flake_lock_file = Path(f"{self.config['source_path']}/flake.lock")
-        with flake_lock_file.open() as file:
+        with flake_lock_file.open(encoding="utf-8") as file:
             self.__flake_lock = load(file)["nodes"]
 
         # iterate over each input defined in the config, then parse it

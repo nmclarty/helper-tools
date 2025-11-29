@@ -27,7 +27,7 @@ def main() -> None:
     yaml = YAML()
     yaml.indent(mapping=2, sequence=4, offset=2)
     config_file = Path(args.config).expanduser()
-    with config_file.open() as file:
+    with config_file.open(encoding="utf-8") as file:
         config = yaml.load(file)
 
     # initialize and then run each module
