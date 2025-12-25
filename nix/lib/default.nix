@@ -57,15 +57,14 @@ with inputs.nixpkgs.lib;
 
   # Creates multiple sops-nix secrets based on the keys and then input file.
   # - keys (a list of the keys to create secrets for)
-  # - file (a string containing the path to the secret file)
-  mkSecrets = keys: file:
+  # - sopsFile (a string containing the path to the secret file)
+  mkSecrets = keys: sopsFile:
     builtins.listToAttrs (
       map
         (key: {
           name = key;
           value = {
-            sopsFile = "${inputs.nix-private}/${file}";
-            inherit key;
+            inherit key sopsFile;
           };
         })
         keys
