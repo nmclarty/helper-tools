@@ -7,16 +7,16 @@ in
   options.programs.py-motd = {
     enable = mkEnableOption "Enable Python Message of the Day";
     settings = {
+      modules = mkOption {
+        type = types.listOf types.str;
+        default = [ "update" "backup" ];
+        description = "Which modules to enable (run), and the order that they are displayed in.";
+      };
       update = {
         source_path = mkOption {
           type = types.str;
           default = "${inputs.self}";
           description = "Path to the Nix flake for the system. Used to retrieve flake.lock information.";
-        };
-        generation_count = mkOption {
-          type = types.int;
-          default = 3;
-          description = "Number of generations to show in the MOTD.";
         };
         inputs = mkOption {
           type = types.listOf types.str;

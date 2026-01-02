@@ -1,14 +1,21 @@
 """Main entry point for py_motd."""
 
 from argparse import ArgumentParser
+from importlib import import_module
 from io import StringIO
 from pathlib import Path
 
 from rich.console import Console
 from ruamel.yaml import YAML
 
-from .modules.backup import Backup
-from .modules.update import Update
+
+def __run_modules(config: dict) -> dict:
+    # run each module that is enabled, in that order
+    output = {}
+    for name in config["modules"]:
+        c = getattr(import_module(f"{__package__}.modules.{name}"), name.capitalize())
+        output[c.display_name] = c(config[name]).get()
+    return output
 
 
 def main() -> None:
@@ -25,21 +32,15 @@ def main() -> None:
 
     # load the config file
     yaml = YAML()
-    yaml.indent(mapping=2, sequence=4, offset=2)
+    yaml.indent(sequence=4, offset=2)
     config_file = Path(args.config).expanduser()
     with config_file.open(encoding="utf-8") as file:
         config = yaml.load(file)
 
-    # initialize and then run each module
-    modules = {
-        "Updates": Update(config["update"]).get(),
-        "Backups": Backup(config["backup"]).get(),
-    }
-
-    # output each module's result as yaml
+    # output the combined result of each module
     console = Console()
     s = StringIO()
-    yaml.dump(modules, s)
+    yaml.dump(__run_modules(config), s)
     console.print(s.getvalue())
 
 

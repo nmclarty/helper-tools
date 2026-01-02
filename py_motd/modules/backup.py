@@ -8,6 +8,8 @@ from pathlib import Path
 class Backup:
     """MOTD module to show information about resticprofile backup status."""
 
+    display_name = "Backups"
+
     def __init__(self, module_config: dict[str, str]) -> None:
         """Initialize the backup module."""
         self.config = {

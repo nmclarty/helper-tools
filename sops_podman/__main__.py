@@ -1,5 +1,6 @@
 """Simple tool for loading secrets from a YAML file to podman."""
 
+import sys
 from argparse import ArgumentParser
 from pathlib import Path
 
@@ -35,16 +36,22 @@ def main() -> None:
     yaml = YAML()
 
     with PodmanClient(base_url=args.podman_connection) as client:
-        if client.ping():
-            current_secrets = client.secrets.list()
-            print(f"Removing {len(current_secrets)} secrets from podman store...")
-            for s in current_secrets:
-                s.remove()
+        try:
+            if not client.ping():
+                raise Exception("Client ping didn't respond with OK")
+        except Exception as e:
+            print(f"Error connecting to Podman: {e}", file=sys.stderr)
+            sys.exit(1)
 
-            secrets = __flatten(yaml.load(Path(args.secret_file)))
-            print(f"Adding {len(secrets)} secrets to podman store...")
-            for key, val in secrets.items():
-                client.secrets.create(key, str(val))
+        current_secrets = client.secrets.list()
+        print(f"Removing {len(current_secrets)} secrets from podman store...")
+        for s in current_secrets:
+            s.remove()
+
+        secrets = __flatten(yaml.load(Path(args.secret_file)))
+        print(f"Adding {len(secrets)} secrets to podman store...")
+        for key, val in secrets.items():
+            client.secrets.create(key, bytes(val, "utf-8"))
 
 
 if __name__ == "__main__":

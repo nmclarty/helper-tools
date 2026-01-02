@@ -9,6 +9,8 @@ from subprocess import run
 class Update:
     """MOTD module to show information about NixOS generations and flake inputs."""
 
+    display_name = "Updates"
+
     def __init__(self, module_config: dict) -> None:
         """Initialize the update module and fetches the input files.
 
@@ -17,7 +19,6 @@ class Update:
         self.config = {
             "source_path": module_config["source_path"],
             "inputs": module_config["inputs"],
-            "generation_count": module_config["generation_count"],
         }
 
         # load the lock file from the flake (source path)
@@ -32,21 +33,18 @@ class Update:
             if name in self.__flake_lock
         ]
 
-        # iterate over the last n generations from nixos-rebuild, and parse them
-        self.generations = [
-            self.__parse_generation(g)
-            for g in loads(
-                run(
-                    ["nixos-rebuild", "list-generations", "--json"],
-                    capture_output=True,
-                    text=True,
-                    check=True,
-                ).stdout,
-            )[: self.config["generation_count"]]
-        ]
+        # fetch the generation info from nixos-rebuild
+        generations = loads(
+            run(
+                ["nixos-rebuild", "list-generations", "--json"],
+                capture_output=True,
+                text=True,
+                check=True,
+            ).stdout,
+        )
 
         # get the current generation
-        self.g = next(g for g in self.generations if g["current"])
+        self.g = self.__parse_generation(next(g for g in generations if g["current"]))
 
     def __parse_input(self, name: str) -> tuple[str, str]:
         """Parse a nix flake input to calculate its age.
@@ -84,12 +82,9 @@ class Update:
         :return: The module output
         """
         return {
-            "Current": {
-                "Generation": self.g["generation"],
-                "Version": self.g["nixosVersion"],
-                "Kernel": self.g["kernelVersion"],
-                "Commit": self.g["configurationRevision"][:7],
-                "Inputs": [{name: f"{age} ago"} for name, age in self.inputs],
-            },
-            "History": [{g["generation"]: f"{g['age']} ago"} for g in self.generations],
+            "Version": self.g["nixosVersion"],
+            "Kernel": self.g["kernelVersion"],
+            "Commit": self.g["configurationRevision"][:7],
+            "Built": f"{self.g['age']} ago",
+            "Inputs": [{name: f"{age} ago"} for name, age in self.inputs],
         }
