@@ -30,7 +30,8 @@ class Snapshot:
         """Create and mount this snapshot."""
         run(["zfs", "snapshot", self.name], check=True)
 
-        self.path.mkdir()
+        if not self.path.exists():
+            self.path.mkdir()
         run(["mount", "-t", "zfs", self.name, self.path], check=True)
 
 
