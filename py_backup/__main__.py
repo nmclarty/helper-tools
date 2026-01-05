@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 from subprocess import run
 
-from pystemd.systemd1 import Manager
+from pystemd.systemd1 import Manager, Unit
 from ruamel.yaml import YAML
 
 
@@ -65,6 +65,9 @@ def main() -> None:
     # create long-term snapshots for local recovery
     manager.Manager.StartUnit(b"sanoid.service", b"replace")
     print("Created long-term snapshots")
+
+    unit = Unit(b"sanoid.service")
+    print(f"running: {unit.Unit.ActiveState}")
 
     # start each service after snapshotting
     for service in config["services"]:
