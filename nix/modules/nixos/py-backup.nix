@@ -87,7 +87,6 @@ in
                   AWS_ACCESS_KEY_ID = config.sops.placeholder."restic/access_key";
                   AWS_SECRET_ACCESS_KEY = config.sops.placeholder."restic/secret_key";
                 };
-                extended-status = true;
                 status-file = "/var/lib/resticprofile/status";
                 force-inactive-lock = true;
                 initialize = true;
@@ -99,6 +98,7 @@ in
                   source = cfg.settings.datasets;
                   source-base = cfg.settings.directory;
                   source-relative = true;
+                  extended-status = true;
                 };
                 retention = {
                   after-backup = true;
