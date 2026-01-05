@@ -31,7 +31,7 @@ in
   config = mkIf true {
     systemd = {
       tmpfiles.rules = [
-        "d ${cfg.settings.dir}"
+        "d ${cfg.settings.directory}"
       ];
       services.backup = {
         description = "Snapshot disks and backup";
