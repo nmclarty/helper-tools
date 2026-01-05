@@ -16,7 +16,7 @@ def cleanup(dir: str, zpool: str, dataset: str) -> None:
 
 def snapshot(dir: str, zpool: str, dataset: str) -> None:
     ds = f"{zpool}/{dataset}@backup"
-    run(["zfs" "snapshot", ds], check=True)
+    run(["zfs", "snapshot", ds], check=True)
     run(["mount", "-t", "zfs", ds, f"{dir}/{dataset}"])
 
 def main() -> None:
