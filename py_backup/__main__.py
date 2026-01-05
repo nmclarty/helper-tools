@@ -2,7 +2,6 @@ from argparse import ArgumentParser
 from pathlib import Path
 from subprocess import run
 
-from pystemd.systemd1 import Manager, Unit
 from ruamel.yaml import YAML
 
 
@@ -48,13 +47,9 @@ def main() -> None:
     Snapshot.directory = config["directory"]
     snapshot = [Snapshot(name) for name in config["datasets"]]
 
-    # load systemd manager
-    manager = Manager(_autoload=True)
-
-    # stop each service for snapshotting
-    for service in config["services"]:
-        manager.Manager.StopUnit(bytes(str(service), "utf-8"), b"replace")
+    print(config["services"])
     print("Stopped services")
+    exit(0)
 
     # create temporary snapshots for backups
     for s in snapshot:
