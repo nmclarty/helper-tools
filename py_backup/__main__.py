@@ -6,18 +6,16 @@ from json import loads
 from pystemd.systemd1 import Manager
 from ruamel.yaml import YAML
 
-def cleanup(dir: str, zpool: str, dataset: str) -> None:
-    if (mount := Path(f"{dir}/{dataset}")).is_mount():
-        run(["umount", mount], check=True)
+def cleanup(ds: str, mt: Path) -> None:
+    if mt.is_mount():
+        run(["umount", mt], check=True)
 
-    ds = f"{zpool}/{dataset}@backup"
     if run(["zfs", "list", ds], capture_output=True).returncode == 0:
         run(["zfs", "destroy", ds], check=True)
 
-def snapshot(dir: str, zpool: str, dataset: str) -> None:
-    ds = f"{zpool}/{dataset}@backup"
+def snapshot(ds: str, mt: Path) -> None:
     run(["zfs", "snapshot", ds], check=True)
-    run(["mount", "-t", "zfs", ds, f"{dir}/{dataset}"])
+    run(["mount", "-t", "zfs", ds, mt])
 
 def main() -> None:
     # cli configuration
@@ -40,8 +38,12 @@ def main() -> None:
 
     # create temporary snapshots for backups
     for dataset in config["datasets"]:
-        cleanup(config["dir"], config["zpool"], dataset)
-        snapshot(config["dir"], config["zpool"], dataset)
+        ds = f"{config["zpool"]}/{dataset}@backup"
+        mt = Path(f"{config["dir"]}/{dataset}")
+
+        cleanup(ds, mt)
+        snapshot(ds, mt)
+        print(f"Created snapshot '{ds}' and mounted in '{mt}'")
 
     # start each service after snapshotting
     for service in config["services"]:
