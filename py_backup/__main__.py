@@ -8,10 +8,10 @@ from ruamel.yaml import YAML
 
 def cleanup(dir: str, zpool: str, dataset: str) -> None:
     if (mount := Path(f"{dir}/{dataset}")).is_mount():
-        run(["unmount", mount], check=True)
+        run(["umount", mount], check=True)
 
     ds = f"{zpool}/{dataset}@backup"
-    if run(["zfs", "list", ds]).returncode == 0:
+    if run(["zfs", "list", ds], capture_output=True).returncode == 0:
         run(["zfs", "destroy", ds], check=True)
 
 def snapshot(dir: str, zpool: str, dataset: str) -> None:
