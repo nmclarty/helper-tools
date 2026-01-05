@@ -6,16 +6,6 @@ in
 {
   options.services.py-backup = {
     enable = mkEnableOption "Enable system backup services.";
-    retention = {
-      days = mkOption {
-        type = types.int;
-        description = "The amount of days to keep snapshots and backups for";
-      };
-      weeks = mkOption {
-        type = types.int;
-        description = "The amount of weeks to keep snapshots and backups for";
-      };
-    };
     settings = {
       services = mkOption {
         type = types.listOf types.str;
@@ -41,6 +31,16 @@ in
       repository = mkOption {
         type = types.str;
         description = "The repository to use for restic backup.";
+      };
+      retention = {
+        days = mkOption {
+          type = types.int;
+          description = "The amount of days to keep snapshots and backups for";
+        };
+        weeks = mkOption {
+          type = types.int;
+          description = "The amount of weeks to keep snapshots and backups for";
+        };
       };
     };
   };
@@ -119,8 +119,8 @@ in
                   after-backup = true;
                   tag = true;
                   prune = true;
-                  keep-daily = cfg.retention.days;
-                  keep-weekly = cfg.retention.weeks;
+                  keep-daily = cfg.restic.retention.days;
+                  keep-weekly = cfg.restic.retention.weeks;
                 };
               };
             };
