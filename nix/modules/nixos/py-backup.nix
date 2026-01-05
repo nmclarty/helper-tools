@@ -26,6 +26,8 @@ in
         default = "/.backup";
         description = "The directory that snapshots will be mounted into for backup.";
       };
+    };
+    restic = {
       repository = mkOption {
         type = types.str;
         description = "The repository to use for restic backup.";
@@ -37,19 +39,34 @@ in
       tmpfiles.rules = [
         "d ${cfg.settings.directory}"
       ];
-      services.backup = {
-        description = "Snapshot disks and backup";
-        after = [ "network-online.target" ];
-        requires = [ "network-online.target" ];
-        serviceConfig.ExecStart = "${perSystem.nix-helpers.default}/bin/py_backup -c ${(pkgs.formats.yaml { }).generate "config.yaml" cfg.settings}";
+      services = {
+        # otherwise starting sanoid with systemd won't wait for completion
+        sanoid.serviceConfig = {
+          Type = "oneshot";
+          RemainAfterExit = true;
+        };
+        backup = {
+          description = "Snapshot disks and backup";
+          after = [ "network-online.target" ];
+          requires = [ "network-online.target" ];
+          serviceConfig = {
+            Type = "oneshot";
+            RemainAfterExit = true;
+            ExecStart = "${perSystem.nix-helpers.default}/bin/py_backup -c ${(pkgs.formats.yaml { }).generate "config.yaml" cfg.settings}";
+          };
+        };
       };
-      timers.backup = {
-        enable = true;
-        description = "Run backup daily at 4am";
-        wantedBy = [ "timers.target" ];
-        timerConfig = {
-          OnCalendar = "*-*-* 4:00:00";
-          Persistent = true;
+      timers = {
+        # since we're triggering sanoid manually, disable its timer
+        sanoid.enable = mkForce false;
+        backup = {
+          enable = true;
+          description = "Run backup daily at 4am";
+          wantedBy = [ "timers.target" ];
+          timerConfig = {
+            OnCalendar = "*-*-* 4:00:00";
+            Persistent = true;
+          };
         };
       };
     };
@@ -68,7 +85,7 @@ in
               version = "1";
 
               default = {
-                inherit (cfg.settings) repository;
+                inherit (cfg.restic) repository;
                 password-file = config.sops.secrets."restic/password".path;
                 env = {
                   AWS_ACCESS_KEY_ID = config.sops.placeholder."restic/access_key";
@@ -100,24 +117,5 @@ in
           builtins.toJSON settings;
       };
     };
-
-    # services = {
-    #     sanoid = {
-    #       enable = true;
-    #       templates.default = {
-    #         hourly = 24;
-    #         daily = 7;
-    #         monthly = 0;
-    #         yearly = 0;
-    #         autosnap = true;
-    #         autoprune = true;
-    #       };
-    #       datasets.zroot = {
-    #         useTemplate = [ "default" ];
-    #         recursive = true;
-    #         processChildrenOnly = true;
-    #       };
-    #     };
-    #   };
   };
 }

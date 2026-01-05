@@ -54,24 +54,31 @@ def main() -> None:
     # stop each service for snapshotting
     for service in config["services"]:
         manager.Manager.StopUnit(bytes(str(service), "utf-8"), b"replace")
+    print("Stopped services")
 
     # create temporary snapshots for backups
     for s in snapshot:
         s.cleanup()
         s.snapshot()
-        print(f"Created snapshot '{s}'")
+    print("Created temporary snapshots")
+
+    # create long-term snapshots for local recovery
+    manager.Manager.StartUnit(b"sanoid.service", b"replace")
+    print("Created long-term snapshots")
 
     # start each service after snapshotting
     for service in config["services"]:
         manager.Manager.StartUnit(bytes(str(service), "utf-8"), b"replace")
+    print("Started services")
 
     # run backups
     run(["resticprofile", "backup"], check=True)
+    print("Finished backup")
 
     # clean up temporary snapshots for backups
     for s in snapshot:
         s.cleanup()
-        print(f"Cleaned up snapshot '{s}'")
+    print("Cleaned up snapshots")
 
 
 if __name__ == "__main__":
