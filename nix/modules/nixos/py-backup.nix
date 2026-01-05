@@ -41,17 +41,13 @@ in
       ];
       services = {
         # otherwise starting sanoid with systemd won't wait for completion
-        sanoid.serviceConfig = {
-          Type = "oneshot";
-          RemainAfterExit = true;
-        };
+        sanoid.serviceConfig.Type = "oneshot";
         backup = {
           description = "Snapshot disks and backup";
           after = [ "network-online.target" ];
           requires = [ "network-online.target" ];
           serviceConfig = {
             Type = "oneshot";
-            RemainAfterExit = true;
             ExecStart = "${perSystem.nix-helpers.default}/bin/py_backup -c ${(pkgs.formats.yaml { }).generate "config.yaml" cfg.settings}";
           };
         };
