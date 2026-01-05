@@ -60,8 +60,6 @@ def main() -> None:
     run(["systemctl", "start", "sanoid.service"], check=True)
     print("Created long-term snapshots")
 
-    print(run(["systemctl", "status", "sanoid.service"], check=True))
-
     # start each service after snapshotting
     run(["systemctl", "start"] + config["services"], check=True)
     print("Started services")
