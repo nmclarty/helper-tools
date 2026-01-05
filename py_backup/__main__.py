@@ -61,13 +61,8 @@ def main() -> None:
     for service in config["services"]:
         manager.Manager.StartUnit(bytes(str(service), "utf-8"), b"replace")
 
-    # # run backups
-    # run(
-    #     ["resticprofile" "remote.backup"],
-    #     capture_output=True,
-    #     text=True,
-    #     check=True,
-    # )
+    # run backups
+    run(["resticprofile", "backup"], check=True)
 
     # clean up temporary snapshots for backups
     for s in snapshot:
