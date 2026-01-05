@@ -48,6 +48,7 @@ in
           requires = [ "network-online.target" ];
           path = with pkgs; [
             zfs
+            util-linux
           ];
           serviceConfig = {
             Type = "oneshot";
