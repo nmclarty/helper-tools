@@ -6,6 +6,10 @@ in
 {
   options.services.py-backup = {
     enable = mkEnableOption "Enable system backup services.";
+    interval = mkOption {
+      type = types.str;
+      description = "Run backup services at this interval."
+    };
     settings = {
       services = mkOption {
         type = types.listOf types.str;
@@ -73,10 +77,9 @@ in
         sanoid.enable = mkForce false;
         backup = {
           enable = true;
-          description = "Run backup daily at 4am";
           wantedBy = [ "timers.target" ];
           timerConfig = {
-            OnCalendar = "*-*-* 4:00:00";
+            OnCalendar = cfg.interval;
             Persistent = true;
           };
         };
