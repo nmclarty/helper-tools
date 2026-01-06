@@ -20,7 +20,6 @@ in
   };
   config = mkIf cfg.enable {
     sops.secrets."sops-podman.yaml" = {
-      restartUnits = [ "sops-podman.service" ];
       inherit (cfg.settings) sopsFile;
       key = "";
     };
