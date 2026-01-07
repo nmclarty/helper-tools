@@ -2,56 +2,69 @@
 
 from datetime import datetime
 from json import load
+from json.decoder import JSONDecodeError
 from pathlib import Path
+
+
+def sizeof_fmt(num: float, suffix="B") -> str:
+    """Parse a number (of bytes) and return a human-readable version.
+
+    :param num: The number to parse.
+    :return: A string of the formatted number.
+    """
+    for unit in ("", "K", "M", "G", "T", "P", "E", "Z"):
+        if abs(num) < 1000.0:
+            return f"{num:3.1f} {unit}{suffix}"
+        num /= 1000.0
+    return f"{num:.1f} Y{suffix}"
+
+
+def parse_status(status: dict) -> dict[str, str]:
+    """Parse a resticprofile status file to calculate details.
+
+    :param status: A dict containing the unprocessed file.
+    :return: A tuple containing the profile name and its age.
+    """
+
+    backup = status["profiles"]["default"]["backup"]
+    return {
+        "status": "Success" if backup["success"] else backup["error"],
+        "age": str(
+            datetime.now() - datetime.fromisoformat(backup["time"]).replace(tzinfo=None)
+        ),
+        "added": sizeof_fmt(backup["bytes_added"]),
+        "total": sizeof_fmt(backup["bytes_total"]),
+    }
 
 
 class Backup:
     """MOTD module to show information about resticprofile backup status."""
 
-    display_name = "Backups"
+    display_name = "Backup"
 
     def __init__(self, module_config: dict[str, str]) -> None:
         """Initialize the backup module."""
         self.config = {
-            "status_path": module_config["status_path"],
-            "profiles": module_config["profiles"],
+            "status_file": module_config["status_file"],
         }
 
-        self.profiles = [
-            self.__parse_profile(name)
-            for name in self.config["profiles"]
-            if self.__get_profile_path(name).exists()
-        ]
+        try:
+            with Path(self.config["status_file"]).open() as file:
+                self.profile = parse_status(load(file))
+        except (FileNotFoundError, JSONDecodeError, KeyError):
+            self.profile = None
 
-    def __get_profile_path(self, name: str) -> Path:
-        """Generate a Path for the status file of a resticprofile backup.
-
-        :param name: The name of the profile
-        :return: The Path to the status file
-        """
-        return Path(f"{self.config['status_path']}/{name}.status")
-
-    def __parse_profile(self, name: str) -> tuple[str, str]:
-        """Parse a resticprofile status file to calculate its age.
-
-        :param name: The name of the profile
-        :return: A tuple containing the profile name and its age
-        """
-        with self.__get_profile_path(name).open(encoding="utf-8") as file:
-            data = load(file)
-
-        profile = data["profiles"][name]["backup"]
-        age = datetime.now() - datetime.fromisoformat(profile["time"]).replace(
-            tzinfo=None,
-        )
-        return (
-            name,
-            str(age)[:-7],
-        )
-
-    def get(self) -> list[dict[str, str]] | dict[str, str]:
+    def get(self) -> dict[str, str]:
         """Return the formatted output of the module.
 
         :return: The module output
         """
-        return [{name: age} for name, age in self.profiles]
+        if self.profile is not None:
+            return {
+                "Status": self.profile["status"],
+                "Age": self.profile["age"][:-7],
+                "Added": self.profile["added"],
+                "Total": self.profile["total"],
+            }
+        else:
+            return {"Status": "Failed to parse status file"}

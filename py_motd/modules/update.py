@@ -9,7 +9,7 @@ from subprocess import run
 class Update:
     """MOTD module to show information about NixOS generations and flake inputs."""
 
-    display_name = "Updates"
+    display_name = "Update"
 
     def __init__(self, module_config: dict) -> None:
         """Initialize the update module and fetches the input files.

@@ -46,12 +46,18 @@ in
           description = "The amount of weeks to keep snapshots and backups for";
         };
       };
+      statusFile = mkOption {
+        type = types.str;
+        default = "/var/lib/resticprofile/status.json";
+        description = "The file where resticprofile's status will be written to.";
+      };
     };
   };
   config = mkIf cfg.enable {
     systemd = {
       tmpfiles.rules = [
         "d ${cfg.settings.directory}"
+        "f ${cfg.restic.statusFile}"
       ];
       services = {
         # otherwise starting sanoid with systemd won't wait for completion
@@ -106,7 +112,7 @@ in
                   AWS_ACCESS_KEY_ID = config.sops.placeholder."restic/access_key";
                   AWS_SECRET_ACCESS_KEY = config.sops.placeholder."restic/secret_key";
                 };
-                status-file = "/var/lib/resticprofile/status";
+                status-file = "/var/lib/resticprofile/status.json";
                 force-inactive-lock = true;
                 initialize = true;
                 cache-dir = "/var/cache/restic";

@@ -1,4 +1,4 @@
-{ lib, inputs, config, pkgs, perSystem, ... }:
+{ lib, inputs, config, osConfig, pkgs, perSystem, ... }:
 with lib;
 let
   cfg = config.programs.py-motd;
@@ -25,15 +25,10 @@ in
         };
       };
       backup = {
-        status_path = mkOption {
+        status_file = mkOption {
           type = types.str;
-          default = "/var/lib/resticprofile";
-          description = "Path to where the resticprofile status files are stored.";
-        };
-        profiles = mkOption {
-          type = types.listOf types.str;
-          default = [ ];
-          description = "List of resticprofile profiles to include in the MOTD.";
+          default = "/var/lib/resticprofile/status.json";
+          description = "Path to the resticprofile status file.";
         };
       };
     };
