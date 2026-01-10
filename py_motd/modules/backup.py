@@ -62,7 +62,7 @@ class Backup:
         if self.profile is not None:
             return {
                 "Status": self.profile["status"],
-                "Age": self.profile["age"][:-7],
+                "Run": f"{self.profile['age'][:-7]} ago",
                 "Added": self.profile["added"],
                 "Total": self.profile["total"],
             }
