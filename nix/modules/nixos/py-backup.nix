@@ -38,6 +38,23 @@ in
         type = types.str;
         description = "The repository to use for restic backup.";
       };
+      secrets = {
+        password = mkOption {
+          type = types.str;
+          default = "restic/password";
+          description = "The secret reference to use for the restic password";
+        };
+        accessKey = mkOption {
+          type = types.str;
+          default = "restic/access_key";
+          description = "The secret reference to use for the s3 access key.";
+        };
+        secretKey = mkOption {
+          type = types.str;
+          default = "restic/secret_key";
+          description = "The secret reference to use for the s3 secret key.";
+        };
+      };
       retention = {
         days = mkOption {
           type = types.int;
@@ -95,11 +112,6 @@ in
     };
 
     sops = {
-      secrets = {
-        "restic/password" = { };
-        "restic/access_key" = { };
-        "restic/secret_key" = { };
-      };
       templates."resticprofile/profiles.json" = {
         path = "/etc/resticprofile/profiles.json";
         content =
@@ -109,10 +121,10 @@ in
 
               default = {
                 inherit (cfg.restic) repository;
-                password-file = config.sops.secrets."restic/password".path;
+                password-file = config.sops.secrets.${cfg.restic.secrets.password}.path;
                 env = {
-                  AWS_ACCESS_KEY_ID = config.sops.placeholder."restic/access_key";
-                  AWS_SECRET_ACCESS_KEY = config.sops.placeholder."restic/secret_key";
+                  AWS_ACCESS_KEY_ID = config.sops.placeholder.${cfg.restic.secrets.accessKey};
+                  AWS_SECRET_ACCESS_KEY = config.sops.placeholder.${cfg.restic.secrets.secretKey};
                 };
                 status-file = "/var/lib/resticprofile/status.json";
                 force-inactive-lock = true;
