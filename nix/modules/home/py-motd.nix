@@ -39,7 +39,7 @@ in
     };
   };
   config = mkIf cfg.enable {
-    home.packages = [ perSystem.nix-helpers.default ];
+    home.packages = [ perSystem.helper-tools.default ];
     xdg.configFile."py_motd/config.yaml".source = (pkgs.formats.yaml { }).generate "config.yaml" cfg.settings;
   };
 }

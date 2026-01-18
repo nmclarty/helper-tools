@@ -93,7 +93,7 @@ in
           environment.PYTHONUNBUFFERED = "1"; # otherwise stdout is delayed
           serviceConfig = {
             Type = "oneshot";
-            ExecStart = "${perSystem.nix-helpers.default}/bin/py_backup -c ${(pkgs.formats.yaml { }).generate "config.yaml" cfg.settings}";
+            ExecStart = "${perSystem.helper-tools.default}/bin/py_backup -c ${(pkgs.formats.yaml { }).generate "config.yaml" cfg.settings}";
           };
         };
       };

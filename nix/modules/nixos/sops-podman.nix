@@ -26,7 +26,7 @@ in
     system.activationScripts.sops-podman = {
       deps = [ "setupSecrets" ];
       text = ''
-        ${perSystem.nix-helpers.default}/bin/sops_podman \
+        ${perSystem.helper-tools.default}/bin/sops_podman \
         -s '${config.sops.secrets."sops-podman.yaml".path}' \
         -p '${cfg.settings.podmanConnection}' || true
       '';
