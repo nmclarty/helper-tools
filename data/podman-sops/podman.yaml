@@ -1,0 +1,9 @@
+# test data to be loaded as podman secrets
+project:
+    email: test@example.com
+    jwt_key: XHTIKg1xNeAVwfqr26Z62TD5KYtQqHZLFWUILqCN4T7DkhIJEwAHVjSFF7vnEObw
+    secret_key: jdg5uqy.u*@#E*@#MCWE&!@k1231rc!nry*XTN
+    port: 7231
+    app:
+        username: test_example
+        password: ueAe9TvNXVhmsK53XtcxhCsjtCiYgh5r

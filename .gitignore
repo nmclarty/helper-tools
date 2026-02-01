@@ -1,12 +1,14 @@
-# direnv
-.direnv/
-
 # nix
 result
 result-*
 
-# python
+# Python-generated files
 __pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
 
-# test data
-data/
+# Virtual environments
+.venv
