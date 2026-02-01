@@ -1,6 +1,6 @@
-{ lib, config, perSystem, ... }:
-with lib;
+{ lib, config, perSystem, pkgs, ... }:
 let
+  inherit (lib) mkEnableOption mkOption types mkIf makeBinPath;
   cfg = config.services.podman-sops;
 in
 {
@@ -19,6 +19,7 @@ in
     system.activationScripts.podman-sops = {
       deps = [ "setupSecrets" ];
       text = ''
+        export PATH=$PATH:${makeBinPath [ pkgs.podman ]}
         ${perSystem.helper-tools.default}/bin/podman_sops \
           --secret-file '${config.sops.secrets."podman-sops.yaml".path}' || true
       '';
