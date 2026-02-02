@@ -90,10 +90,13 @@ in
             util-linux
             resticprofile
           ];
-          environment.PYTHONUNBUFFERED = "1"; # otherwise stdout is delayed
+          environment = {
+            PYTHONUNBUFFERED = "1"; # otherwise stdout is delayed
+            PY_BACKUP_CONFIG_FILE = "${(pkgs.formats.yaml { }).generate "config.yaml" cfg.settings}";
+          };
           serviceConfig = {
             Type = "oneshot";
-            ExecStart = "${perSystem.helper-tools.default}/bin/py_backup -c ${(pkgs.formats.yaml { }).generate "config.yaml" cfg.settings}";
+            ExecStart = "${perSystem.helper-tools.default}/bin/py_backup";
           };
         };
       };

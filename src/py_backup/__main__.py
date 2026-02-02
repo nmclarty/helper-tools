@@ -1,13 +1,14 @@
 import logging
-import sys
-from argparse import ArgumentParser
-from pathlib import Path
-from subprocess import run
+import subprocess
 
-from pydantic import BaseModel, ValidationError
-from ruamel.yaml import YAML
+import ruamel.yaml
+from pydantic import BaseModel, Field, FilePath, ValidationError
+from pydantic_settings import BaseSettings, CliApp, SettingsConfigDict
 
 from .snapshot import SnapshotManager, ZpoolConfig
+
+logger = logging.getLogger(__name__)
+yaml = ruamel.yaml.YAML()
 
 
 class Config(BaseModel):
@@ -15,33 +16,27 @@ class Config(BaseModel):
     zpool: ZpoolConfig
 
 
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(cli_kebab_case=True, env_prefix="PY_BACKUP_")
+    log_level: str = Field(description="The logging level to use.", default="INFO")
+    config_file: FilePath = Field(description="Path to the configuration file.")
+
+    def cli_cmd(self) -> None:
+        logging.basicConfig(level=self.log_level)
+        config = Config.model_validate(yaml.load(self.config_file))
+
+        with SnapshotManager(config.zpool, config.services):
+            subprocess.run(["resticprofile", "backup"], check=True)
+            logger.info("Finished backup")
+
+
 def main() -> None:
-    # cli configuration
-    parser = ArgumentParser()
-    parser.add_argument(
-        "-c", "--config", help="Path to the configuration file", required=True
-    )
-    parser.add_argument(
-        "-l", "--log-level", help="The logging level (verbosity) to use", default="INFO"
-    )
-    args = parser.parse_args()
-
-    # configure logging
-    logging.basicConfig(level=args.log_level)
-    logger = logging.getLogger(__name__)
-
-    # load the config file
-    yaml = YAML()
+    """Sync wrapper function for pydantic-settings since cli_cmd
+    needs to be called with CliApp.run to work properly."""
     try:
-        config = Config.model_validate(yaml.load(Path(args.config)))
+        CliApp.run(Settings)
     except ValidationError as e:
-        logger.critical(f"Invalid configuration \n{e}")
-        sys.exit(1)
-
-    # create snapshots and backup
-    with SnapshotManager(config.zpool, config.services):
-        run(["resticprofile", "backup"], check=True)
-        logger.info("Finished backup")
+        logger.error(e)
 
 
 if __name__ == "__main__":

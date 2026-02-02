@@ -1,5 +1,3 @@
-"""Simple tool for loading secrets from a YAML file to podman."""
-
 import asyncio
 import logging
 import subprocess

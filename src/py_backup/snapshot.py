@@ -1,8 +1,10 @@
-from logging import getLogger
+import logging
 from pathlib import Path
-from subprocess import run
+from subprocess import DEVNULL, run
 
 from pydantic import BaseModel
+
+logger = logging.getLogger(__name__)
 
 
 class ZpoolConfig(BaseModel):
@@ -12,7 +14,7 @@ class ZpoolConfig(BaseModel):
 
 
 class Snapshot:
-    """Simple class for making operations on a zfs snapshot easier."""
+    """Low-level class operating on a ZFS snapshot."""
 
     def __init__(self, name: str, zpool: str, directory: str) -> None:
         self.name = f"{zpool}/{name}@backup"
@@ -22,16 +24,20 @@ class Snapshot:
         return f"{self.name}:{self.path}"
 
     def cleanup(self) -> None:
-        """Unmount and destroy this snapshot."""
+        """Unmount and destroy snapshot."""
         if self.path.is_mount():
             run(["umount", self.path], check=True)
 
-        check_exists = run(["zfs", "list", self.name], check=False, capture_output=True)
+        check_exists = run(
+            ["zfs", "list", self.name],
+            check=False,
+            stdout=DEVNULL,
+        )
         if check_exists.returncode == 0:
             run(["zfs", "destroy", self.name], check=True)
 
     def snapshot(self) -> None:
-        """Create and mount this snapshot."""
+        """Create and mount snapshot."""
         run(["zfs", "snapshot", self.name], check=True)
 
         if not self.path.exists():
@@ -41,8 +47,6 @@ class Snapshot:
 
 class SnapshotManager:
     """Manages a collection of ZFS snapshots, creating and then cleaning them up when finished."""
-
-    logger = getLogger(__name__)
 
     def __init__(self, zpool: ZpoolConfig, services: list[str]):
         self.snapshots = [
@@ -54,25 +58,25 @@ class SnapshotManager:
         # stop all the services before
         if len(self.services) != 0:
             run(["systemctl", "stop", *self.services], check=True)
-            self.logger.info("Stopped services")
+            logger.info("Stopped services")
 
         for s in self.snapshots:
             s.cleanup()
             s.snapshot()
-        self.logger.info("Created temporary snapshots")
+        logger.info("Created temporary snapshots")
 
         # create long-term snapshots for local recovery
         run(["systemctl", "start", "sanoid.service"], check=True)
-        self.logger.info("Created long-term snapshots")
+        logger.info("Created long-term snapshots")
 
         # start all the services after
         if len(self.services) != 0:
             run(["systemctl", "start", *self.services], check=True)
-            self.logger.info("Started services")
+            logger.info("Started services")
 
         return self
 
     def __exit__(self, exc_type, exc_value, exc_tb) -> None:
         for s in self.snapshots:
             s.cleanup()
-        self.logger.info("Cleaned up snapshots")
+        logger.info("Cleaned up snapshots")
