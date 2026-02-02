@@ -27,18 +27,21 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         cli_kebab_case=True,
         cli_enforce_required=True,
-        cli_prog_name="podman_sops",
     )
     log_level: str = Field(description="The logging level to use.", default="INFO")
     secret_file: FilePath = Field(description="The secrets YAML file to be loaded.")
 
     async def cli_cmd(self) -> None:
-        logging.basicConfig(level=self.log_level)
+        logging.basicConfig(format="%(message)s", level=self.log_level)
+        logger.info("syncing secrets to podman...")
 
-        logger.info("Clearing existing podman secrets")
-        subprocess.run(["podman", "secret", "rm", "--all"], check=True)
+        logger.debug("Clearing existing podman secrets")
+        subprocess.run(
+            ["podman", "secret", "rm", "--all"],
+            check=True,
+            stdout=subprocess.DEVNULL,
+        )
 
-        logger.info("Adding secrets from %s", self.secret_file)
         tasks = [
             asyncio.to_thread(
                 subprocess.run,
@@ -46,9 +49,11 @@ class Settings(BaseSettings):
                 check=True,
                 text=True,
                 input=str(value),
+                stdout=subprocess.DEVNULL,
             )
             for name, value in flatten(yaml.load(self.secret_file)).items()
         ]
+        logger.debug("Adding %s secrets from %s", len(tasks), self.secret_file)
         await asyncio.gather(*tasks)
 
 
