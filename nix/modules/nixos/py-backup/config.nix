@@ -1,77 +1,17 @@
-{ lib, pkgs, perSystem, config, ... }:
-with lib;
+{ flake, ... }:
+{
+  lib,
+  config,
+  pkgs,
+  system,
+  ...
+}:
 let
+  inherit (lib) mkIf mkForce;
   cfg = config.services.py-backup;
+  yaml = pkgs.formats.yaml { };
 in
 {
-  options.services.py-backup = {
-    enable = mkEnableOption "Enable system backup services.";
-    interval = mkOption {
-      type = types.str;
-      description = "Run backup services at this interval.";
-    };
-    settings = {
-      services = mkOption {
-        type = types.listOf types.str;
-        default = [ ];
-        description = "A list of systemd services to be stopped for snapshotting.";
-      };
-      zpool = {
-        name = mkOption {
-          type = types.str;
-          description = "The zpool that contains all the datasets to be backed up.";
-        };
-        directory = mkOption {
-          type = types.str;
-          default = "/.backup";
-          description = "The directory that snapshots will be mounted into for backup.";
-        };
-        datasets = mkOption {
-          type = types.listOf types.str;
-          default = [ ];
-          description = "A list of zfs datasets that will be backed up.";
-        };
-      };
-    };
-    restic = {
-      repository = mkOption {
-        type = types.str;
-        description = "The repository to use for restic backup.";
-      };
-      secrets = {
-        password = mkOption {
-          type = types.str;
-          default = "restic/password";
-          description = "The secret reference to use for the restic password";
-        };
-        accessKey = mkOption {
-          type = types.str;
-          default = "restic/access_key";
-          description = "The secret reference to use for the s3 access key.";
-        };
-        secretKey = mkOption {
-          type = types.str;
-          default = "restic/secret_key";
-          description = "The secret reference to use for the s3 secret key.";
-        };
-      };
-      retention = {
-        days = mkOption {
-          type = types.int;
-          description = "The amount of days to keep snapshots and backups for";
-        };
-        weeks = mkOption {
-          type = types.int;
-          description = "The amount of weeks to keep snapshots and backups for";
-        };
-      };
-      statusFile = mkOption {
-        type = types.str;
-        default = "/var/lib/resticprofile/status.json";
-        description = "The file where resticprofile's status will be written to.";
-      };
-    };
-  };
   config = mkIf cfg.enable {
     systemd = {
       tmpfiles.rules = [
@@ -83,8 +23,14 @@ in
         sanoid.serviceConfig.Type = "oneshot";
         backup = {
           description = "Snapshot disks and backup";
-          after = [ "network-online.target" "zfs.target" ];
-          requires = [ "network-online.target" "zfs.target" ];
+          after = [
+            "network-online.target"
+            "zfs.target"
+          ];
+          requires = [
+            "network-online.target"
+            "zfs.target"
+          ];
           path = with pkgs; [
             zfs
             util-linux
@@ -92,11 +38,11 @@ in
           ];
           environment = {
             PYTHONUNBUFFERED = "1"; # otherwise stdout is delayed
-            PY_BACKUP_CONFIG_FILE = "${(pkgs.formats.yaml { }).generate "config.yaml" cfg.settings}";
+            PY_BACKUP_CONFIG_FILE = "${yaml.generate "py-backup-config.yaml" cfg.settings}";
           };
           serviceConfig = {
             Type = "oneshot";
-            ExecStart = "${perSystem.helper-tools.default}/bin/py_backup";
+            ExecStart = "${flake.packages.${system}.default}/bin/py_backup";
           };
         };
       };
