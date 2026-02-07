@@ -3,7 +3,6 @@
   lib,
   config,
   pkgs,
-  system,
   ...
 }:
 let
@@ -117,7 +116,7 @@ in
           };
           serviceConfig = {
             Type = "oneshot";
-            ExecStart = "${flake.packages.${system}.default}/bin/py_backup";
+            ExecStart = "${flake.packages.${pkgs.stdenv.hostPlatform.system}.default}/bin/py_backup";
           };
         };
       };
