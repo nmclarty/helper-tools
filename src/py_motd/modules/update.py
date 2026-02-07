@@ -44,7 +44,7 @@ class Update(BaseModel):
         :return: The module output
         """
         return {
-            "Version": self._data.version[:-8],
+            "Version": ".".join(self._data.version.split(".")[:-1]),
             "Commit": f"{self._data.commit} ({str(self._data.flake)[:-7]} ago)",
             "Inputs": [{k: f"{str(v)[:-7]} ago"} for k, v in self._data.inputs],
         }
