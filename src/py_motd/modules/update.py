@@ -1,14 +1,12 @@
 """MOTD module for system updates."""
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 from functools import cached_property
 from typing import ClassVar
 
 from pydantic import BaseModel, FilePath, computed_field, field_validator
 
-
-def _age(ts: str) -> timedelta:
-    return datetime.now() - datetime.fromtimestamp(float(ts))
+from ..lib import age
 
 
 class Data(BaseModel):
@@ -20,12 +18,12 @@ class Data(BaseModel):
     @field_validator("flake", mode="before")
     @classmethod
     def flake_transformer(cls, flake: str):
-        return _age(flake)
+        return age(flake)
 
     @field_validator("inputs", mode="before")
     @classmethod
     def inputs_transformer(cls, inputs: list[dict[str, str]]):
-        return [(k, _age(v)) for input in inputs for k, v in input.items()]
+        return [(k, age(v)) for input in inputs for k, v in input.items()]
 
 
 class Update(BaseModel):
@@ -37,7 +35,7 @@ class Update(BaseModel):
     @computed_field
     @cached_property
     def _data(self) -> Data:
-        with self.data_file.expanduser().open() as file:
+        with self.data_file.open() as file:
             return Data.model_validate_json(file.read())
 
     def as_dict(self) -> dict:
