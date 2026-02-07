@@ -1,7 +1,27 @@
-{ lib, inputs, config, pkgs, perSystem, ... }:
-with lib;
+{ flake, ... }:
+{
+  lib,
+  inputs,
+  config,
+  pkgs,
+  osConfig,
+  ...
+}:
 let
+  inherit (lib)
+    mkEnableOption
+    mkOption
+    types
+    mkIf
+    ;
   cfg = config.programs.py-motd;
+  yaml = pkgs.formats.yaml { };
+  update = {
+    commit = osConfig.system.configurationRevision;
+    flake = flake.lastModified;
+    inputs = builtins.map (k: { ${k} = inputs.${k}.lastModified; }) cfg.settings.update.inputs;
+    version = with osConfig.system; if pkgs.stdenv.isDarwin then nixpkgsVersion else nixos.version;
+  };
 in
 {
   options.programs.py-motd = {
@@ -13,15 +33,15 @@ in
           default = true;
           description = "Whether to enable the module";
         };
-        source_path = mkOption {
-          type = types.str;
-          default = "${inputs.self}";
-          description = "Path to the Nix flake for the system. Used to retrieve flake.lock information.";
-        };
         inputs = mkOption {
           type = types.listOf types.str;
           default = [ "nixpkgs" ];
           description = "List of flake inputs to include in the MOTD.";
+        };
+        data_file = mkOption {
+          type = types.str;
+          default = "${pkgs.writeText "update.json" (builtins.toJSON update)}";
+          description = "Path to the data file containing system version info.";
         };
       };
       backup = {
@@ -39,7 +59,7 @@ in
     };
   };
   config = mkIf cfg.enable {
-    home.packages = [ perSystem.helper-tools.default ];
-    xdg.configFile."py_motd/config.yaml".source = (pkgs.formats.yaml { }).generate "config.yaml" cfg.settings;
+    home.packages = [ flake.packages.${pkgs.stdenv.hostPlatform.system}.default ];
+    xdg.configFile."py-motd/config.yaml".source = yaml.generate "py-motd-config.yaml" cfg.settings;
   };
 }
