@@ -12,8 +12,8 @@ from ruamel.yaml import YAML
 def __run_modules(modules: list[str], config: dict) -> dict:
     output = {}
     for name in [n for n in modules if config[n] and config[n]["enable"]]:
-        c = getattr(import_module(f"{__package__}.modules.{name}"), name.capitalize())
-        output[c.display_name] = c(config[name]).get()
+        cls = getattr(import_module(f"{__package__}.modules.{name}"), name.capitalize())
+        output[cls.display_name] = cls.model_validate(config[name]).as_dict()
     return output
 
 
@@ -25,7 +25,7 @@ def main() -> None:
         "-c",
         "--config",
         help="Path to the configuration file",
-        default="~/.config/py_motd/config.yaml",
+        default="~/.config/py-motd/config.yaml",
     )
     parser.add_argument(
         "-m",
