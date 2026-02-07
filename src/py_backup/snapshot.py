@@ -31,7 +31,7 @@ class Snapshot:
         check_exists = run(
             ["zfs", "list", self.name],
             check=False,
-            stdout=DEVNULL,
+            stderr=DEVNULL,
         )
         if check_exists.returncode == 0:
             run(["zfs", "destroy", self.name], check=True)
