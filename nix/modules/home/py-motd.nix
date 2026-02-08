@@ -18,7 +18,7 @@ let
   yaml = pkgs.formats.yaml { };
   update = {
     commit = osConfig.system.configurationRevision;
-    flake = flake.lastModified;
+    flake = inputs.self.lastModified;
     inputs = builtins.map (k: { ${k} = inputs.${k}.lastModified; }) cfg.settings.update.inputs;
     version = with osConfig.system; if pkgs.stdenv.isDarwin then nixpkgsVersion else nixos.version;
   };
