@@ -1,29 +1,21 @@
 """MOTD module for system updates."""
 
-from datetime import timedelta
+from datetime import datetime, timedelta
 from functools import cached_property
 from typing import ClassVar
 
-from pydantic import BaseModel, FilePath, computed_field, field_validator
+from pydantic import BaseModel, FilePath, computed_field
 
-from ..lib import age
+
+def timestamp_age(ts: float) -> timedelta:
+    return datetime.now() - datetime.fromtimestamp(ts)
 
 
 class Data(BaseModel):
     commit: str
-    flake: timedelta
-    inputs: list[tuple[str, timedelta]]
+    flake: float
+    inputs: list[dict[str, float]]
     version: str
-
-    @field_validator("flake", mode="before")
-    @classmethod
-    def flake_transformer(cls, flake: str):
-        return age(flake)
-
-    @field_validator("inputs", mode="before")
-    @classmethod
-    def inputs_transformer(cls, inputs: list[dict[str, str]]):
-        return [(k, age(v)) for input in inputs for k, v in input.items()]
 
 
 class Update(BaseModel):
@@ -45,6 +37,10 @@ class Update(BaseModel):
         """
         return {
             "Version": ".".join(self._data.version.split(".")[:-1]),
-            "Commit": f"{self._data.commit} ({str(self._data.flake)[:-7]} ago)",
-            "Inputs": [{k: f"{str(v)[:-7]} ago"} for k, v in self._data.inputs],
+            "Commit": f"{self._data.commit} ({str(timestamp_age(self._data.flake))[:-7]} ago)",
+            "Inputs": [
+                {k: f"{str(timestamp_age(v))[:-7]} ago"}
+                for input in self._data.inputs
+                for k, v in input.items()
+            ],
         }
