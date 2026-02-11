@@ -19,7 +19,7 @@ let
   update = {
     commit = osConfig.system.configurationRevision;
     flake = inputs.self.lastModified;
-    inputs = builtins.map (k: { ${k} = inputs.${k}.lastModified; }) cfg.settings.update.inputs;
+    inputs = map (k: { ${k} = inputs.${k}.lastModified; }) cfg.settings.update.inputs;
     version = with osConfig.system; if pkgs.stdenv.isDarwin then nixpkgsVersion else nixos.version;
   };
 in
