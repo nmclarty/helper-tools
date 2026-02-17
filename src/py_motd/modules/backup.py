@@ -60,8 +60,7 @@ class Backup(BaseModel):
         """
         if self._status is not None:
             return {
-                "Status": self._status["status"],
-                "Run": f"{self._status['age'][:-7]} ago",
+                "Status": f"{self._status['status']} ({self._status['age'][:-7]} ago)",
                 "Added": self._status["added"],
                 "Total": self._status["total"],
             }
