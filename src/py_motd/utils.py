@@ -9,7 +9,7 @@ def format_ts(ts: float) -> str:
         color = "cyan"
     else:
         color = "red"
-    return f"[{color}]{str(delta)[:-10]}[/{color}] ago"
+    return f"[{color}]{str(delta)[:-7]}[/{color}] ago"
 
 
 def sizeof_fmt(num: float, suffix="B") -> str:
