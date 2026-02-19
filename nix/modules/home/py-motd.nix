@@ -68,7 +68,7 @@ in
         })
         ++ (optional cfg.backup.enable {
           name = "backup";
-          file = cfg.backup.file;
+          inherit (cfg.backup) file;
         });
     };
   };
