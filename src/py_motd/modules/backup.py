@@ -1,68 +1,71 @@
 """MOTD module for backup status."""
 
-import json
 from datetime import datetime
-from functools import cached_property
-from json.decoder import JSONDecodeError
-from typing import ClassVar
+from typing import Literal
 
-from pydantic import BaseModel, FilePath, computed_field
+from pydantic import (
+    BaseModel,
+    Field,
+    FilePath,
+    ValidationError,
+    computed_field,
+    field_validator,
+    model_validator,
+)
 
-
-def sizeof_fmt(num: float, suffix="B") -> str:
-    """Parse a number (of bytes) and return a human-readable version.
-
-    :param num: The number to parse.
-    :return: A string of the formatted number.
-    """
-    for unit in ("", "K", "M", "G", "T", "P", "E", "Z"):
-        if abs(num) < 1000.0:
-            return f"{num:3.1f} {unit}{suffix}"
-        num /= 1000.0
-    return f"{num:.1f} Y{suffix}"
+from py_motd.utils import format_ts, sizeof_fmt
 
 
-def parse_status(status: dict) -> dict[str, str]:
-    """Parse a resticprofile status file to calculate details.
+class Data(BaseModel):
+    success: bool
+    error: str
+    time: datetime
+    added: str = Field(alias="bytes_added")
+    total: str = Field(alias="bytes_total")
 
-    :param status: A dict containing the unprocessed file.
-    :return: A tuple containing the profile name and its age.
-    """
+    @model_validator(mode="before")
+    @classmethod
+    def extract(cls, data: dict):
+        return data["profiles"]["default"]["backup"]
 
-    backup = status["profiles"]["default"]["backup"]
-    return {
-        "status": "Success" if backup["success"] else backup["error"],
-        "age": str(
-            datetime.now() - datetime.fromisoformat(backup["time"]).replace(tzinfo=None)
-        ),
-        "added": sizeof_fmt(backup["bytes_added"]),
-        "total": sizeof_fmt(backup["bytes_total"]),
-    }
+    @field_validator("added", "total", mode="before")
+    @classmethod
+    def size(cls, data: float) -> str:
+        return sizeof_fmt(data)
+
+    @computed_field
+    @property
+    def status(self) -> str:
+        return "Success" if self.success else self.error
+
+    @computed_field
+    @property
+    def age(self) -> str:
+        return format_ts(self.time.timestamp())
 
 
 class Backup(BaseModel):
-    display_name: ClassVar[str] = "Backup"
-    status_file: FilePath
+    name: Literal["backup"]
+    display_name: str = "Backup"
+    file: FilePath
 
-    @computed_field
-    @cached_property
-    def _status(self) -> dict | None:
-        with self.status_file.open() as file:
-            try:
-                return parse_status(json.load(file))
-            except (JSONDecodeError, KeyError):
-                return None
-
-    def as_dict(self) -> dict:
+    def run(self) -> str:
         """Return the formatted output of the module.
 
         :return: The module output
         """
-        if self._status is not None:
-            return {
-                "Status": f"{self._status['status']} ({self._status['age'][:-7]} ago)",
-                "Added": self._status["added"],
-                "Total": self._status["total"],
-            }
-        else:
-            return {"Status": "Failed to parse status file"}
+        try:
+            with self.file.open() as file:
+                data = Data.model_validate_json(file.read())
+
+                return (
+                    f"[bold]{self.display_name}:[/bold]\n"
+                    f"  Status: {data.status} ({data.age})\n"
+                    f"  Added: {data.added}\n"
+                    f"  Total: {data.total}\n"
+                )
+        except (ValidationError):
+            return (
+                f"[bold]{self.display_name}:[/bold]\n"
+                "  Status: [red]Failed to parse status file[/red]\n"
+            )

@@ -1,46 +1,40 @@
 """MOTD module for system updates."""
 
-from datetime import datetime, timedelta
-from functools import cached_property
-from typing import ClassVar
+from typing import Literal
 
-from pydantic import BaseModel, FilePath, computed_field
+from pydantic import BaseModel, FilePath
+
+from py_motd.utils import format_ts
 
 
-def timestamp_age(ts: float) -> timedelta:
-    return datetime.now() - datetime.fromtimestamp(ts)
+class Input(BaseModel):
+    name: str
+    age: float
 
 
 class Data(BaseModel):
     commit: str
-    flake: float
-    inputs: list[dict[str, float]]
+    age: float
+    inputs: list[Input]
     version: str
 
 
 class Update(BaseModel):
-    """MOTD module to show information about NixOS generations and flake inputs."""
+    name: Literal["update"]
+    display_name: str = "Update"
+    file: FilePath
 
-    display_name: ClassVar[str] = "Update"
-    data_file: FilePath
-
-    @computed_field
-    @cached_property
-    def _data(self) -> Data:
-        with self.data_file.open() as file:
-            return Data.model_validate_json(file.read())
-
-    def as_dict(self) -> dict:
+    def run(self) -> str:
         """Return the formatted output of the module.
 
         :return: The module output
         """
-        return {
-            "Version": ".".join(self._data.version.split(".")[:-1]),
-            "Commit": f"{self._data.commit} ({str(timestamp_age(self._data.flake))[:-7]} ago)",
-            "Inputs": [
-                {k: f"{str(timestamp_age(v))[:-7]} ago"}
-                for input in self._data.inputs
-                for k, v in input.items()
-            ],
-        }
+        with self.file.open() as file:
+            data = Data.model_validate_json(file.read())
+
+        return (
+            f"[bold]{self.display_name}:[/bold]\n"
+            f"  Version: [blue]{'.'.join(data.version.split('.')[:-1])}[/blue]\n"
+            f"  Commit: [yellow]{data.commit}[/yellow] ({format_ts(data.age)})\n"
+            f"  Inputs:\n{'\n'.join([f'    - {input.name}: {format_ts(input.age)}' for input in data.inputs])}\n"
+        )

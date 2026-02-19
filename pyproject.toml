@@ -1,12 +1,11 @@
 [project]
 name = "helper-tools"
-version = "2.3.0"
+version = "2.4.0"
 description = "Tools for automating/enhancing NixOS (and other) system tasks."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "rich>=14.2.0",
-    "ruamel-yaml>=0.18.16",
     "pydantic-settings>=2.10.1",
 ]
 

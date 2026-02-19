@@ -1,0 +1,10 @@
+{
+  "commit": "209fa72",
+  "age": 1770674608,
+  "inputs": [
+    { "name": "nixpkgs", "age": 1770862336 },
+    { "name": "nix-modules", "age": 1770674558 },
+    { "name": "helper-tools", "age": 1768011115 }
+  ],
+  "version": "26.05.20260208.d6c7193"
+}

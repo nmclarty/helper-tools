@@ -1,0 +1,29 @@
+{
+  "profiles": {
+    "default": {
+      "backup": {
+        "success": true,
+        "time": "2026-02-17T04:00:51.886311045-08:00",
+        "error": "",
+        "stderr": "",
+        "duration": 12,
+        "files_new": 5892,
+        "files_changed": 1452,
+        "files_unmodified": 277547,
+        "dirs_new": 501,
+        "dirs_changed": 845,
+        "dirs_unmodified": 35796,
+        "files_total": 284891,
+        "bytes_added": 432369370,
+        "bytes_total": 346046511404
+      },
+      "retention": {
+        "success": true,
+        "time": "2026-02-17T04:01:02.807733171-08:00",
+        "error": "",
+        "stderr": "",
+        "duration": 11
+      }
+    }
+  }
+}

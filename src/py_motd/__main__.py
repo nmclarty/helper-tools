@@ -1,51 +1,54 @@
-"""Main entry point for py_motd."""
-
-from argparse import ArgumentParser
-from importlib import import_module
-from io import StringIO
+import logging
+import tomllib
+from asyncio import gather, to_thread
 from pathlib import Path
+from typing import Annotated, Union
 
-from rich.console import Console
-from ruamel.yaml import YAML
+import rich
+from pydantic import BaseModel, Field, FilePath, ValidationError
+from pydantic_settings import BaseSettings, CliApp, SettingsConfigDict
+
+from py_motd.modules.backup import Backup
+from py_motd.modules.update import Update
+
+logger = logging.getLogger(__name__)
+
+Module = Annotated[Union[Backup, Update], Field(discriminator="name")]
 
 
-def __run_modules(modules: list[str], config: dict) -> dict:
-    output = {}
-    for name in [n for n in modules if config[n] and config[n]["enable"]]:
-        cls = getattr(import_module(f"{__package__}.modules.{name}"), name.capitalize())
-        output[cls.display_name] = cls.model_validate(config[name]).as_dict()
-    return output
+class Config(BaseModel):
+    modules: list[Module]
+
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(cli_kebab_case=True)
+    log_level: str = Field(description="Logging level to use.", default="WARNING")
+    config_file: FilePath = Field(
+        description="Path to configuration file.",
+        default=Path("~/.config/py-motd/config.toml").expanduser(),
+    )
+
+    async def cli_cmd(self) -> None:
+        logging.basicConfig(level=self.log_level)
+        with self.config_file.open("rb") as file:
+            config = Config.model_validate(tomllib.load(file))
+
+        # run each module in a thread, and then print the ordered output
+        for m in await gather(*[to_thread(m.run) for m in config.modules]):
+            rich.print(m, end="")
+
+        print()
 
 
 def main() -> None:
-    """Run the main py_motd app."""
-    # cli configuration
-    parser = ArgumentParser()
-    parser.add_argument(
-        "-c",
-        "--config",
-        help="Path to the configuration file",
-        default="~/.config/py-motd/config.yaml",
-    )
-    parser.add_argument(
-        "-m",
-        "--modules",
-        type=lambda i: i.split(","),
-        help="List of modules to run, and their order (comma separated).",
-        default="update,backup",
-    )
-    args = parser.parse_args()
-
-    # load the config file
-    yaml = YAML()
-    yaml.indent(sequence=4, offset=2)
-    config = yaml.load(Path(args.config).expanduser())
-
-    # output the combined result of each module
-    console = Console()
-    s = StringIO()
-    yaml.dump(__run_modules(args.modules, config), s)
-    console.print(s.getvalue())
+    """Sync wrapper function for pydantic-settings since cli_cmd
+    needs to be called with CliApp.run to work properly."""
+    try:
+        CliApp.run(Settings)
+    except ValidationError as e:
+        logger.error(e)
+    except KeyboardInterrupt:
+        logger.info("Keyboard interrupt detected, exiting...")
 
 
 if __name__ == "__main__":

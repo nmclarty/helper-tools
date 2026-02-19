@@ -1,0 +1,7 @@
+[[modules]]
+name = "update"
+file = "data/py-motd/update.json"
+
+[[modules]]
+name = "backup"
+file = "data/py-motd/backup.json"
