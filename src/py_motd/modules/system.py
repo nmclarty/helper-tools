@@ -24,7 +24,7 @@ class Service(BaseModel):
 class System(BaseModel):
     module: Literal["system"]
     name: str = "System"
-    services: list[Service]
+    services: list[Service] = []
 
     @field_validator("services", mode="before")
     @classmethod
