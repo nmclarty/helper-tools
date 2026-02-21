@@ -1,6 +1,6 @@
 [[modules]]
 module = "system"
-services = [ "rust-motd.service", "user@1000.service" ]
+services = [ "rust-motd", "user@1000" ]
 
 [[modules]]
 module = "update"

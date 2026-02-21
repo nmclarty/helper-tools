@@ -42,6 +42,9 @@ class System(BaseModel):
         if len(self.services) > 0:
             output += "  Services:\n"
             for s in self.services:
-                output += f"    {s.name}: [green]{s.status}[/green]\n"
+                if s.status == "active":
+                    output += f"    {s.name}: [green]{s.status}[/green]\n"
+                else:
+                    output += f"    {s.name}: [red]{s.status}[/red]\n"
 
         return output
