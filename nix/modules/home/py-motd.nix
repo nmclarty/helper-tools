@@ -32,11 +32,22 @@ in
 {
   options.programs.py-motd = {
     enable = mkEnableOption "Enable Python Message of the Day";
+    system = {
+      enable = mkOption {
+        type = types.bool;
+        default = true;
+        description = "Whether to enable the module.";
+      };
+      services = mkOption {
+        type = with types; listOf str;
+        description = "List of services to monitor in the MOTD.";
+      };
+    };
     update = {
       enable = mkOption {
         type = types.bool;
         default = true;
-        description = "Whether to enable the module";
+        description = "Whether to enable the module.";
       };
       inputs = mkOption {
         type = types.listOf types.str;
@@ -48,7 +59,7 @@ in
       enable = mkOption {
         type = types.bool;
         default = with osConfig; services ? py-backup && services.py-backup.enable;
-        description = "Whether to enable the module";
+        description = "Whether to enable the module. Will be enabled automatically with py-backup.";
       };
       file = mkOption {
         type = types.str;
@@ -62,12 +73,16 @@ in
     home.packages = [ flake.packages.${pkgs.stdenv.hostPlatform.system}.default ];
     xdg.configFile."py-motd/config.toml".source = toml.generate "py-motd-config.toml" {
       modules =
-        (optional cfg.update.enable {
-          name = "update";
+        (optional cfg.system.enable {
+          module = "system";
+          inherit (cfg.system) services;
+        })
+        ++ (optional cfg.update.enable {
+          module = "update";
           file = "${updateData}";
         })
         ++ (optional cfg.backup.enable {
-          name = "backup";
+          module = "backup";
           inherit (cfg.backup) file;
         });
     };

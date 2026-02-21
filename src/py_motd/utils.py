@@ -1,4 +1,14 @@
+import platform
 from datetime import datetime
+
+
+def os_version() -> str:
+    if (system := platform.system()) == "Linux":
+        return platform.freedesktop_os_release()["PRETTY_NAME"]
+    elif system == "Darwin":
+        return f"macOS {platform.mac_ver()[0]}"
+    else:
+        return "Unknown"
 
 
 def format_ts(ts: float) -> str:
@@ -9,7 +19,7 @@ def format_ts(ts: float) -> str:
         color = "cyan"
     else:
         color = "red"
-    return f"[{color}]{str(delta)[:-7]}[/{color}] ago"
+    return f"[{color}]{str(delta)[:-7]}[/{color}]"
 
 
 def sizeof_fmt(num: float, suffix="B") -> str:

@@ -1,7 +1,11 @@
 [[modules]]
-name = "update"
+module = "system"
+services = [ "rust-motd", "user@1000" ]
+
+[[modules]]
+module = "update"
 file = "data/py-motd/update.json"
 
 [[modules]]
-name = "backup"
+module = "backup"
 file = "data/py-motd/backup.json"

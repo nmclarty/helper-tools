@@ -45,8 +45,8 @@ class Data(BaseModel):
 
 
 class Backup(BaseModel):
-    name: Literal["backup"]
-    display_name: str = "Backup"
+    module: Literal["backup"]
+    name: str = "Backup"
     file: FilePath
 
     def run(self) -> str:
@@ -54,18 +54,16 @@ class Backup(BaseModel):
 
         :return: The module output
         """
+        output = f"[bold]{self.name}:[/bold]\n"
         try:
             with self.file.open() as file:
                 data = Data.model_validate_json(file.read())
-
-                return (
-                    f"[bold]{self.display_name}:[/bold]\n"
+                output += (
                     f"  Status: {data.status} ({data.age})\n"
                     f"  Added: {data.added}\n"
                     f"  Total: {data.total}\n"
                 )
-        except (ValidationError):
-            return (
-                f"[bold]{self.display_name}:[/bold]\n"
-                "  Status: [red]Failed to parse status file[/red]\n"
-            )
+        except ValidationError:
+            output += "  Status: [red]Failed to parse status file[/red]\n"
+
+        return output
