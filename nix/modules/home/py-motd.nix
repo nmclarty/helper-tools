@@ -38,6 +38,10 @@ in
         default = true;
         description = "Whether to enable the module.";
       };
+      services = mkOption {
+        type = with types; listOf str;
+        description = "List of services to monitor in the MOTD.";
+      };
     };
     update = {
       enable = mkOption {
