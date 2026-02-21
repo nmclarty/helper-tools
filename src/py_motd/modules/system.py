@@ -16,5 +16,4 @@ class System(BaseModel):
             f"  Version: {os_version()}\n"
             f"  Uptime: {format_ts(psutil.boot_time())}\n"
             f"  Load: {', '.join([str(round(t, 2)) for t in psutil.getloadavg()])}\n"
-            f"  Users: {psutil.users()[0]}\n"
         )

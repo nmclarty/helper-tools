@@ -6,7 +6,7 @@ def os_version() -> str:
     if (system := platform.system()) == "Linux":
         return platform.freedesktop_os_release()["PRETTY_NAME"]
     elif system == "Darwin":
-        return platform.mac_ver()[0]
+        return f"macOS {platform.mac_ver()[0]}"
     else:
         return "Unknown"
 
