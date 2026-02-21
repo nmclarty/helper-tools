@@ -24,7 +24,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "psutil", specifier = ">=7.2.2" },
+    { name = "psutil", specifier = ">=7.1.3" },
     { name = "pydantic-settings", specifier = ">=2.10.1" },
     { name = "rich", specifier = ">=14.2.0" },
     { name = "ruamel-yaml", specifier = ">=0.18.16" },
