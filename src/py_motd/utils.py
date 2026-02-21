@@ -1,5 +1,17 @@
 import platform
 from datetime import datetime
+from rich.table import Table
+
+
+def fmt_table(name: str) -> Table:
+    return Table(
+        box=None,
+        padding=(0, 0, 0, 2),
+        show_header=False,
+        title=f"{name}:",
+        title_justify="left",
+        title_style="",
+    )
 
 
 def os_version() -> str:
