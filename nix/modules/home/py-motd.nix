@@ -75,6 +75,7 @@ in
       modules =
         (optional cfg.system.enable {
           module = "system";
+          inherit (cfg.services) services;
         })
         ++ (optional cfg.update.enable {
           module = "update";
