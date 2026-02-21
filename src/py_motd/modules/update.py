@@ -34,7 +34,7 @@ class Update(BaseModel):
 
         return (
             f"[bold]{self.name}:[/bold]\n"
-            f"  Nixpkgs: [blue]{data.version}[/blue]\n"
+            f"  Nixpkgs: [blue]{'.'.join(data.version.split('.')[:-1])}[/blue]\n"
             f"  Commit: [yellow]{data.commit}[/yellow] ({format_ts(data.age)})\n"
             f"  Inputs:\n{'\n'.join([f'    - {input.name}: {format_ts(input.age)}' for input in data.inputs])}\n"
         )
