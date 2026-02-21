@@ -8,4 +8,4 @@ class Services(BaseModel):
     name: str = "Services"
 
     def run(self) -> str:
-        return ()
+        return f"[bold]{self.name}[/bold]\n"
