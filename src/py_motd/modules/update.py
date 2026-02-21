@@ -20,8 +20,8 @@ class Data(BaseModel):
 
 
 class Update(BaseModel):
-    name: Literal["update"]
-    display_name: str = "Update"
+    module: Literal["update"]
+    name: str = "Update"
     file: FilePath
 
     def run(self) -> str:
@@ -33,8 +33,8 @@ class Update(BaseModel):
             data = Data.model_validate_json(file.read())
 
         return (
-            f"[bold]{self.display_name}:[/bold]\n"
-            f"  Version: [blue]{'.'.join(data.version.split('.')[:-1])}[/blue]\n"
+            f"[bold]{self.name}:[/bold]\n"
+            f"  Nixpkgs: [blue]{data.version}[/blue]\n"
             f"  Commit: [yellow]{data.commit}[/yellow] ({format_ts(data.age)})\n"
             f"  Inputs:\n{'\n'.join([f'    - {input.name}: {format_ts(input.age)}' for input in data.inputs])}\n"
         )

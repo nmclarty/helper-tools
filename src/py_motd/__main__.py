@@ -9,11 +9,12 @@ from pydantic import BaseModel, Field, FilePath, ValidationError
 from pydantic_settings import BaseSettings, CliApp, SettingsConfigDict
 
 from py_motd.modules.backup import Backup
+from py_motd.modules.system import System
 from py_motd.modules.update import Update
 
 logger = logging.getLogger(__name__)
 
-Module = Annotated[Union[Backup, Update], Field(discriminator="name")]
+Module = Annotated[Union[Backup, System, Update], Field(discriminator="module")]
 
 
 class Config(BaseModel):

@@ -1,7 +1,10 @@
 [[modules]]
-name = "update"
+module = "system"
+
+[[modules]]
+module = "update"
 file = "data/py-motd/update.json"
 
 [[modules]]
-name = "backup"
+module = "backup"
 file = "data/py-motd/backup.json"
