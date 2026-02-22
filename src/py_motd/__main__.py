@@ -7,6 +7,7 @@ from typing import Annotated, Union
 import rich
 from pydantic import BaseModel, Field, FilePath, ValidationError
 from pydantic_settings import BaseSettings, CliApp, SettingsConfigDict
+from rich.columns import Columns
 
 from py_motd.modules.backup import Backup
 from py_motd.modules.system import System
@@ -34,11 +35,12 @@ class Settings(BaseSettings):
         with self.config_file.open("rb") as file:
             config = Config.model_validate(tomllib.load(file))
 
+        columns = Columns()
         # run each module in a thread, and then print the ordered output
         for m in await gather(*[to_thread(m.run) for m in config.modules]):
-            rich.print(m, end="")
+            columns.renderables.append(m)
 
-        print()
+        rich.print(columns)
 
 
 def main() -> None:
