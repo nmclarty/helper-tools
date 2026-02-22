@@ -35,12 +35,9 @@ class Settings(BaseSettings):
         with self.config_file.open("rb") as file:
             config = Config.model_validate(tomllib.load(file))
 
-        columns = Columns()
         # run each module in a thread, and then print the ordered output
-        for m in await gather(*[to_thread(m.run) for m in config.modules]):
-            columns.renderables.append(m)
-
-        rich.print(columns)
+        modules = [to_thread(m.run) for m in config.modules]
+        rich.print(Columns(await gather(*modules), column_first=True))
 
 
 def main() -> None:

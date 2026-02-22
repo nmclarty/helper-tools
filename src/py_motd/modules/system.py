@@ -1,13 +1,16 @@
+import logging
 import subprocess
 from functools import cached_property
 from typing import Literal
 
 import psutil
 from pydantic import BaseModel, computed_field, field_validator
-
-from py_motd.utils import format_ts, os_version, fmt_table
 from rich.console import Group
 from rich.padding import Padding
+
+from py_motd.utils import fmt_table, format_ts, os_version
+
+logger = logging.getLogger(__name__)
 
 
 class Service(BaseModel):
@@ -16,11 +19,15 @@ class Service(BaseModel):
     @computed_field
     @cached_property
     def status(self) -> str:
-        return subprocess.run(
-            ["systemctl", "is-active", self.name],
-            capture_output=True,
-            text=True,
-        ).stdout.strip()
+        try:
+            return subprocess.run(
+                ["systemctl", "is-active", self.name],
+                capture_output=True,
+                text=True,
+            ).stdout.strip()
+        except FileNotFoundError as e:
+            logger.error(e)
+            return "error"
 
 
 class System(BaseModel):
