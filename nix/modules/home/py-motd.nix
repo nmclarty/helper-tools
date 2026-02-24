@@ -23,7 +23,7 @@ let
       age = inputs.self.lastModified;
       inputs = map (k: {
         name = k;
-        age = inputs.${k}.lastModified;
+        age = inputs.${k}.lastModified or 0;
       }) cfg.update.inputs;
       version = with osConfig.system; if pkgs.stdenv.isDarwin then nixpkgsVersion else nixos.version;
     }
