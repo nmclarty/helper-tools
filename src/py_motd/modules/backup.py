@@ -13,7 +13,7 @@ from pydantic import (
     model_validator,
 )
 
-from py_motd.utils import format_ts, sizeof_fmt
+from py_motd.utils import fmt_delta, sizeof_fmt
 
 
 class Data(BaseModel):
@@ -41,7 +41,7 @@ class Data(BaseModel):
     @computed_field
     @property
     def age(self) -> str:
-        return format_ts(self.time.timestamp())
+        return fmt_delta(self.time.replace(tzinfo=None))
 
 
 class Backup(BaseModel):

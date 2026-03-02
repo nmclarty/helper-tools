@@ -1,6 +1,30 @@
 import platform
 from datetime import datetime
+
 from rich.table import Table
+
+
+def fmt_delta(time: float | datetime) -> str:
+    """Display the age of a timestamp or datetime in the past, formatted with colors.
+
+    :param time: The event to calculate for.
+    :return: The pretty printed age.
+    """
+    match time:
+        case float():
+            delta = datetime.now() - datetime.fromtimestamp(time)
+        case datetime():
+            delta = datetime.now() - time
+        case _:
+            raise TypeError()
+
+    if (days := delta.days) < 7:
+        color = "green"
+    elif days < 31:
+        color = "cyan"
+    else:
+        color = "red"
+    return f"[{color}]{str(delta).split('.')[0]}[/{color}]"
 
 
 def fmt_table(name: str) -> Table:
@@ -21,17 +45,6 @@ def os_version() -> str:
         return f"macOS {platform.mac_ver()[0]}"
     else:
         return "Unknown"
-
-
-def format_ts(ts: float) -> str:
-    delta = datetime.now() - datetime.fromtimestamp(ts)
-    if (days := delta.days) < 7:
-        color = "green"
-    elif days < 31:
-        color = "cyan"
-    else:
-        color = "red"
-    return f"[{color}]{str(delta)[:-7]}[/{color}]"
 
 
 def sizeof_fmt(num: float, suffix="B") -> str:

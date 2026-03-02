@@ -8,7 +8,7 @@ from pydantic import BaseModel, computed_field, field_validator
 from rich.console import Group
 from rich.padding import Padding
 
-from py_motd.utils import fmt_table, format_ts, os_version
+from py_motd.utils import fmt_delta, fmt_table, os_version
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +45,7 @@ class System(BaseModel):
             (
                 f"[bold]{self.name}:[/bold]\n"
                 f"  Version: {os_version()}\n"
-                f"  Uptime: {format_ts(psutil.boot_time())}\n"
+                f"  Uptime: {fmt_delta(psutil.boot_time())}\n"
                 f"  Load: {', '.join([str(round(t, 2)) for t in psutil.getloadavg()])}"
             )
         )
