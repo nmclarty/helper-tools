@@ -1,6 +1,6 @@
 [[modules]]
 module = "system"
-services = [ "rust-motd", "user@1000", "really-long-name" ]
+services = ["beszel", "immich", "jellyfin", "librespeed", "pocket", "seafile", "tinyauth", "traefik"]
 
 [[modules]]
 module = "update"

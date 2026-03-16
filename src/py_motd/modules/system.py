@@ -5,10 +5,8 @@ from typing import Literal
 
 import psutil
 from pydantic import BaseModel, computed_field, field_validator
-from rich.console import Group
-from rich.padding import Padding
 
-from py_motd.utils import fmt_delta, fmt_table, os_version
+from py_motd.utils import fmt_delta, os_version
 
 logger = logging.getLogger(__name__)
 
@@ -18,16 +16,17 @@ class Service(BaseModel):
 
     @computed_field
     @cached_property
-    def status(self) -> str:
+    def is_active(self) -> bool:
         try:
-            return subprocess.run(
-                ["systemctl", "is-active", self.name],
-                capture_output=True,
-                text=True,
-            ).stdout.strip()
+            return (
+                subprocess.run(
+                    ["systemctl", "is-active", self.name], stdout=subprocess.DEVNULL
+                ).returncode
+                == 0
+            )
         except FileNotFoundError as e:
             logger.error(e)
-            return "error"
+            return False
 
 
 class System(BaseModel):
@@ -40,21 +39,19 @@ class System(BaseModel):
     def load_services(cls, names: list[str]):
         return [Service(name=name) for name in names]
 
-    def run(self) -> Group:
-        group = Group(
-            (
-                f"[bold]{self.name}:[/bold]\n"
-                f"  Version: {os_version()}\n"
-                f"  Uptime: {fmt_delta(psutil.boot_time())}\n"
-                f"  Load: {', '.join([str(round(t, 2)) for t in psutil.getloadavg()])}"
-            )
+    def run(self) -> str:
+        output = (
+            f"[bold]{self.name}:[/bold]\n"
+            f"  Version: [blue]{os_version()}[/blue]\n"
+            f"  Uptime: {fmt_delta(psutil.boot_time())}\n"
+            f"  Load: {', '.join([str(round(t, 2)) for t in psutil.getloadavg()])}\n"
         )
 
         if len(self.services) > 0:
-            table = fmt_table("Services")
-            for s in self.services:
-                color = "green" if s.status == "active" else "red"
-                table.add_row(f"{s.name}:", f"[{color}]{s.status}[/{color}]")
-            group.renderables.append(Padding(table, (0, 0, 0, 2)))
+            active = len([s for s in self.services if s.is_active])
+            output += f"  Services: [green]{active}[/green] runnning"
+            failed = len(self.services) - active
+            if failed > 0:
+                output += f", [red]{failed}[/red] failed"
 
-        return group
+        return output

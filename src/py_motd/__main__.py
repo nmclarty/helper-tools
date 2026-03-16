@@ -4,16 +4,17 @@ from asyncio import gather, to_thread
 from pathlib import Path
 from typing import Annotated, Union
 
-import rich
 from pydantic import BaseModel, Field, FilePath, ValidationError
 from pydantic_settings import BaseSettings, CliApp, SettingsConfigDict
 from rich.columns import Columns
+from rich.console import Console
 
 from py_motd.modules.backup import Backup
 from py_motd.modules.system import System
 from py_motd.modules.update import Update
 
 logger = logging.getLogger(__name__)
+console = Console(highlight=False)
 
 Module = Annotated[Union[Backup, System, Update], Field(discriminator="module")]
 
@@ -37,7 +38,8 @@ class Settings(BaseSettings):
 
         # run each module in a thread, and then print the ordered output
         modules = [to_thread(m.run) for m in config.modules]
-        rich.print(Columns(await gather(*modules), column_first=True))
+        modules = [to_thread(m.run) for m in config.modules]
+        console.print(Columns(await gather(*modules), column_first=True))
 
 
 def main() -> None:
