@@ -1,6 +1,6 @@
 [project]
 name = "helper-tools"
-version = "2.5.0"
+version = "2.5.1"
 description = "Tools for automating/enhancing NixOS (and other) system tasks."
 readme = "README.md"
 requires-python = ">=3.13"

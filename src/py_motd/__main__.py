@@ -38,7 +38,6 @@ class Settings(BaseSettings):
 
         # run each module in a thread, and then print the ordered output
         modules = [to_thread(m.run) for m in config.modules]
-        modules = [to_thread(m.run) for m in config.modules]
         console.print(Columns(await gather(*modules), column_first=True))
 
 
