@@ -1,6 +1,6 @@
 [[modules]]
 module = "system"
-services = ["beszel", "immich", "jellyfin", "librespeed", "pocket", "seafile", "tinyauth", "traefik"]
+services = ["beszel", "immich", "librespeed", "pocket", "seafile", "tinyauth", "traefik"]
 
 [[modules]]
 module = "update"

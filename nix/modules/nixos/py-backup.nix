@@ -14,7 +14,7 @@ let
     mkForce
     ;
   cfg = config.services.py-backup;
-  yaml = pkgs.formats.yaml { };
+  toml = pkgs.formats.toml { };
 in
 {
   options.services.py-backup = {
@@ -112,11 +112,11 @@ in
           ];
           environment = {
             PYTHONUNBUFFERED = "1"; # otherwise stdout is delayed
-            PY_BACKUP_CONFIG_FILE = "${yaml.generate "py-backup-config.yaml" cfg.settings}";
+            PY_BACKUP_CONFIG_FILE = "${toml.generate "py-backup-config.toml" cfg.settings}";
           };
           serviceConfig = {
             Type = "oneshot";
-            ExecStart = "${flake.packages.${pkgs.stdenv.hostPlatform.system}.default}/bin/py_backup";
+            ExecStart = "${flake.packages.${pkgs.stdenv.hostPlatform.system}.default}/bin/py-backup";
           };
         };
       };

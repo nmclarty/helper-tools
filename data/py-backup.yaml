@@ -1,8 +1,0 @@
-services:
-    - app.service
-zpool:
-    datasets:
-        - nixos
-        - srv
-    directory: /.backup
-    name: zroot

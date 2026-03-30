@@ -20,7 +20,7 @@ in
       deps = [ "setupSecrets" ];
       text = ''
         export PATH=$PATH:${makeBinPath [ pkgs.podman ]}
-        ${perSystem.helper-tools.default}/bin/podman_sops \
+        ${perSystem.helper-tools.default}/bin/podman-sops \
           --secret-file '${config.sops.secrets."podman-sops.yaml".path}' || true
       '';
     };

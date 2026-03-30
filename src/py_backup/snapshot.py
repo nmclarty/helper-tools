@@ -2,21 +2,21 @@ import logging
 from pathlib import Path
 from subprocess import DEVNULL, run
 
-from pydantic import BaseModel
+from pydantic import BaseModel, DirectoryPath
 
 logger = logging.getLogger(__name__)
 
 
 class ZpoolConfig(BaseModel):
     name: str
-    directory: str
+    directory: DirectoryPath
     datasets: list[str]
 
 
 class Snapshot:
     """Low-level class operating on a ZFS snapshot."""
 
-    def __init__(self, name: str, zpool: str, directory: str) -> None:
+    def __init__(self, name: str, zpool: str, directory: DirectoryPath) -> None:
         self.name = f"{zpool}/{name}@backup"
         self.path = Path(f"{directory}/{name}")
 

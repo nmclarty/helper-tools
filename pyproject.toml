@@ -12,9 +12,9 @@ dependencies = [
 ]
 
 [project.scripts]
-py_motd = "py_motd.__main__:main"
-podman_sops = "podman_sops.__main__:main"
-py_backup = "py_backup.__main__:main"
+py-motd = "py_motd.__main__:main"
+podman-sops = "podman_sops.__main__:main"
+py-backup = "py_backup.__main__:main"
 
 [build-system]
 requires = ["hatchling"]

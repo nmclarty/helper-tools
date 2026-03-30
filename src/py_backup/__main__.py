@@ -1,14 +1,14 @@
 import logging
 import subprocess
+import tomllib
+from pathlib import Path
 
-import ruamel.yaml
 from pydantic import BaseModel, Field, FilePath, ValidationError
 from pydantic_settings import BaseSettings, CliApp, SettingsConfigDict
 
 from .snapshot import SnapshotManager, ZpoolConfig
 
 logger = logging.getLogger(__name__)
-yaml = ruamel.yaml.YAML()
 
 
 class Config(BaseModel):
@@ -19,11 +19,15 @@ class Config(BaseModel):
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(cli_kebab_case=True, env_prefix="PY_BACKUP_")
     log_level: str = Field(description="The logging level to use.", default="INFO")
-    config_file: FilePath = Field(description="Path to the configuration file.")
+    config_file: FilePath = Field(
+        description="Path to the configuration file.",
+        default=Path("/etc/py-backup/config.toml"),
+    )
 
     def cli_cmd(self) -> None:
         logging.basicConfig(level=self.log_level)
-        config = Config.model_validate(yaml.load(self.config_file))
+        with self.config_file.open("rb") as file:
+            config = Config.model_validate(tomllib.load(file))
 
         with SnapshotManager(config.zpool, config.services):
             subprocess.run(["resticprofile", "backup"], check=True)
