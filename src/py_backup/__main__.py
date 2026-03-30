@@ -23,6 +23,7 @@ class Settings(BaseSettings):
         description="Path to the configuration file.",
         default=Path("/etc/py-backup/config.toml"),
     )
+    command: list[str] = Field(description="Wrapped backup command to run")
 
     def cli_cmd(self) -> None:
         logging.basicConfig(level=self.log_level)
@@ -30,8 +31,9 @@ class Settings(BaseSettings):
             config = Config.model_validate(tomllib.load(file))
 
         with SnapshotManager(config.zpool, config.services):
-            subprocess.run(["resticprofile", "backup"], check=True)
-            logger.info("Finished backup")
+            logger.debug("Starting running command")
+            subprocess.run(self.command, check=True)
+            logger.info("Finished running command")
 
 
 def main() -> None:

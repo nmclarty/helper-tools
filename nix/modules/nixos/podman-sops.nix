@@ -1,6 +1,18 @@
-{ lib, config, perSystem, pkgs, ... }:
+{
+  lib,
+  config,
+  perSystem,
+  pkgs,
+  ...
+}:
 let
-  inherit (lib) mkEnableOption mkOption types mkIf makeBinPath;
+  inherit (lib)
+    mkEnableOption
+    mkOption
+    types
+    mkIf
+    makeBinPath
+    ;
   cfg = config.services.podman-sops;
 in
 {

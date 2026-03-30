@@ -23,9 +23,13 @@ in
       type = types.str;
       description = "Run backup services at this interval.";
     };
+    command = mkOption {
+      type = with types; listOf str;
+      description = "Wrapped backup command to run (should be absolute path)";
+    };
     settings = {
       services = mkOption {
-        type = types.listOf types.str;
+        type = with types; listOf str;
         default = [ ];
         description = "A list of systemd services to be stopped for snapshotting.";
       };
@@ -40,58 +44,17 @@ in
           description = "The directory that snapshots will be mounted into for backup.";
         };
         datasets = mkOption {
-          type = types.listOf types.str;
+          type = with types; listOf str;
           default = [ ];
           description = "A list of zfs datasets that will be backed up.";
         };
-      };
-    };
-    restic = {
-      repository = mkOption {
-        type = types.str;
-        description = "The repository to use for restic backup.";
-      };
-      secrets = {
-        password = mkOption {
-          type = types.str;
-          default = "restic/password";
-          description = "The secret reference to use for the restic password";
-        };
-        accessKey = mkOption {
-          type = types.str;
-          default = "restic/access_key";
-          description = "The secret reference to use for the s3 access key.";
-        };
-        secretKey = mkOption {
-          type = types.str;
-          default = "restic/secret_key";
-          description = "The secret reference to use for the s3 secret key.";
-        };
-      };
-      retention = {
-        days = mkOption {
-          type = types.int;
-          description = "The amount of days to keep snapshots and backups for";
-        };
-        weeks = mkOption {
-          type = types.int;
-          description = "The amount of weeks to keep snapshots and backups for";
-        };
-      };
-      statusFile = mkOption {
-        type = types.str;
-        default = "/var/lib/resticprofile/status.json";
-        description = "The file where resticprofile's status will be written to.";
       };
     };
   };
 
   config = mkIf cfg.enable {
     systemd = {
-      tmpfiles.rules = [
-        "d ${cfg.settings.zpool.directory}"
-        "f ${cfg.restic.statusFile}"
-      ];
+      tmpfiles.rules = [ "d ${cfg.settings.zpool.directory}" ];
       services = {
         # otherwise starting sanoid with systemd won't wait for completion
         sanoid.serviceConfig.Type = "oneshot";
@@ -108,11 +71,11 @@ in
           path = with pkgs; [
             zfs
             util-linux
-            resticprofile
           ];
           environment = {
             PYTHONUNBUFFERED = "1"; # otherwise stdout is delayed
             PY_BACKUP_CONFIG_FILE = "${toml.generate "py-backup-config.toml" cfg.settings}";
+            PY_BACKUP_COMMAND = "${builtins.toJSON cfg.command}";
           };
           serviceConfig = {
             Type = "oneshot";
@@ -131,48 +94,6 @@ in
             Persistent = true;
           };
         };
-      };
-    };
-
-    sops = {
-      templates."resticprofile/profiles.json" = {
-        path = "/etc/resticprofile/profiles.json";
-        content =
-          let
-            settings = {
-              version = "1";
-
-              default = {
-                inherit (cfg.restic) repository;
-                password-file = config.sops.secrets.${cfg.restic.secrets.password}.path;
-                env = {
-                  AWS_ACCESS_KEY_ID = config.sops.placeholder.${cfg.restic.secrets.accessKey};
-                  AWS_SECRET_ACCESS_KEY = config.sops.placeholder.${cfg.restic.secrets.secretKey};
-                };
-                status-file = "/var/lib/resticprofile/status.json";
-                force-inactive-lock = true;
-                initialize = true;
-                cache-dir = "/var/cache/restic";
-                cleanup-cache = true;
-                pack-size = 64;
-                backup = {
-                  tag = "automatic";
-                  source = cfg.settings.zpool.datasets;
-                  source-base = cfg.settings.zpool.directory;
-                  source-relative = true;
-                  extended-status = true;
-                };
-                retention = {
-                  after-backup = true;
-                  tag = true;
-                  prune = true;
-                  keep-daily = cfg.restic.retention.days;
-                  keep-weekly = cfg.restic.retention.weeks;
-                };
-              };
-            };
-          in
-          builtins.toJSON settings;
       };
     };
   };

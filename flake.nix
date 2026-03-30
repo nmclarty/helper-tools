@@ -9,7 +9,8 @@
     pyproject-nix.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = inputs:
+  outputs =
+    inputs:
     inputs.blueprint {
       inherit inputs;
       prefix = "nix/";
