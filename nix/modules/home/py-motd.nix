@@ -19,13 +19,19 @@ let
   toml = pkgs.formats.toml { };
   updateData = pkgs.writeText "update.json" (
     builtins.toJSON {
-      commit = osConfig.system.configurationRevision;
-      age = inputs.self.lastModified;
+      nixpkgs = {
+        rev = inputs.nixpkgs.shortRev or "";
+        modified = inputs.nixpkgs.lastModified or 0;
+      };
+      config = {
+        rev = osConfig.system.configurationRevision;
+        modified = inputs.self.lastModified or 0;
+      };
       inputs = map (k: {
         name = k;
-        age = inputs.${k}.lastModified or 0;
+        rev = inputs.${k}.shortRev or "";
+        modified = inputs.${k}.lastModified or 0;
       }) cfg.update.inputs;
-      version = with osConfig.system; if pkgs.stdenv.isDarwin then nixpkgsVersion else nixos.version;
     }
   );
 in
