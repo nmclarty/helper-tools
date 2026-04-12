@@ -19,19 +19,11 @@ let
   toml = pkgs.formats.toml { };
   updateData = pkgs.writeText "update.json" (
     builtins.toJSON {
-      nixpkgs = {
-        rev = inputs.nixpkgs.shortRev or "";
-        modified = inputs.nixpkgs.lastModified or 0;
-      };
-      config = {
-        rev = osConfig.system.configurationRevision;
-        modified = inputs.self.lastModified or 0;
-      };
       inputs = map (k: {
         name = k;
-        rev = inputs.${k}.shortRev or "";
+        rev = inputs.${k}.dirtyShortRev or inputs.${k}.shortRev or "";
         modified = inputs.${k}.lastModified or 0;
-      }) cfg.update.inputs;
+      }) ([ "self" "nixpkgs" ] ++ cfg.update.inputs);
     }
   );
 in
