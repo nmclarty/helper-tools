@@ -83,7 +83,7 @@ in
     }
 
     (mkIf cfg.backup.enable {
-      cfg.settings = cfg.backup.settings;
+      services.helper-tools.settings = cfg.backup.settings;
       systemd = {
         tmpfiles.rules = [ "d ${cfg.backup.settings.zpool.directory}" ];
         services = {
@@ -126,7 +126,7 @@ in
     })
 
     (mkIf cfg.secret.enable {
-      cfg.settings = cfg.secret.settings;
+      services.helper-tools.settings = cfg.secret.settings;
       system.activationScripts.helper-tools = {
         deps = cfg.secret.dependencies;
         text = ''
