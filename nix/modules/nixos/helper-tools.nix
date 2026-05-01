@@ -79,7 +79,7 @@ in
       };
     }
 
-    (mkIf (with cfg; enable && backup.enable) {
+    (mkIf (cfg.enable && cfg.backup.enable) {
       systemd = {
         tmpfiles.rules = [ "d ${cfg.backup.settings.zpool.directory}" ];
         services = {
