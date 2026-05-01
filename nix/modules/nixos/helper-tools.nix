@@ -20,6 +20,7 @@ let
   helper-tools = "${flake.packages.${pkgs.stdenv.hostPlatform.system}.default}/bin/helper-tools";
 in
 {
+  _file = "helper-tools.nix";
   options.services.helper-tools = {
     backup = {
       enable = mkEnableOption "Enable backup";

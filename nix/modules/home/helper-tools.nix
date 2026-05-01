@@ -28,6 +28,7 @@ let
   );
 in
 {
+  _file = "helper-tools.nix";
   options.programs.helper-tools = {
     enable = mkEnableOption "Enable helper-tools";
     motd = {
