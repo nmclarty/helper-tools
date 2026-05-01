@@ -12,7 +12,6 @@ class ZpoolConfig(BaseModel):
     directory: DirectoryPath
     datasets: list[str]
 
-
 class Snapshot:
     """Low-level class operating on a ZFS snapshot."""
 
@@ -49,35 +48,46 @@ class Snapshot:
 class SnapshotManager:
     """Manages a collection of ZFS snapshots, creating and then cleaning them up when finished."""
 
-    def __init__(self, zpool: ZpoolConfig, services: list[str]):
+    def __init__(self, zpool: ZpoolConfig, services: list[str], dry_run: bool):
         self.snapshots = [
             Snapshot(name, zpool.name, zpool.directory) for name in zpool.datasets
         ]
         self.services = services
+        self.dry_run = dry_run
 
     def __enter__(self):
         # stop all the services before
         if len(self.services) != 0:
-            run(["systemctl", "stop", *self.services], check=True)
-            logger.info("Stopped services")
+            logger.debug(f"Stopping services: {self.services}")
+            if not self.dry_run:
+                run(["systemctl", "stop", *self.services], check=True) 
+                logger.info("Stopped services")
 
-        for s in self.snapshots:
-            s.cleanup()
-            s.snapshot()
-        logger.info("Created temporary snapshots")
+        logger.debug(f"Creating snapshots: {[str(s) for s in self.snapshots]}")
+        if not self.dry_run:
+            for s in self.snapshots:
+                s.cleanup()
+                s.snapshot()
+            logger.info("Created snapshots")
 
         # create long-term snapshots for local recovery
-        run(["systemctl", "start", "sanoid.service"], check=True)
-        logger.info("Created long-term snapshots")
+        logger.debug("Creating long-term snapshots")
+        if not self.dry_run:
+            run(["systemctl", "start", "sanoid.service"], check=True)
+            logger.info("Created long-term snapshots")
 
         # start all the services after
         if len(self.services) != 0:
-            run(["systemctl", "start", *self.services], check=True)
-            logger.info("Started services")
+            logger.debug(f"Starting services: {self.services}")
+            if not self.dry_run:
+                run(["systemctl", "start", *self.services], check=True)
+                logger.info("Started services")
 
         return self
 
     def __exit__(self, exc_type, exc_value, exc_tb) -> None:
-        for s in self.snapshots:
-            s.cleanup()
-        logger.info("Cleaned up snapshots")
+        logger.debug(f"Cleaning up snapshots: {[str(s) for s in self.snapshots]}")
+        if not self.dry_run:
+            for s in self.snapshots:
+                s.cleanup()
+            logger.info("Cleaned up snapshots")

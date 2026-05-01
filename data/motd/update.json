@@ -1,0 +1,24 @@
+{
+  "inputs": [
+    {
+      "modified": 1777548435,
+      "name": "self",
+      "rev": "6ac8557"
+    },
+    {
+      "modified": 1777282418,
+      "name": "nixpkgs",
+      "rev": "dfa1e69"
+    },
+    {
+      "modified": 1777547985,
+      "name": "nix-modules",
+      "rev": "7515782"
+    },
+    {
+      "modified": 1777518431,
+      "name": "home-manager",
+      "rev": "2e54a93"
+    }
+  ]
+}

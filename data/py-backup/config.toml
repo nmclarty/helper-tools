@@ -1,6 +1,0 @@
-services = ["beszel", "immich", "librespeed", "pocket", "seafile", "tinyauth", "traefik"]
-
-[zpool]
-name = "zroot"
-directory = "/.backup"
-datasets = ["nixos", "srv"]

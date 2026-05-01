@@ -1,0 +1,20 @@
+backup:
+  dry_run: true
+  services: ["traefik"]
+  zpool:
+    name: zroot
+    directory: /.backup
+    datasets: ["nixos", "srv"]
+
+motd:
+  modules:
+    - module: system
+      services: ["traefik"]
+    - module: update
+      file: data/motd/update.json
+    - module: backup
+      file: data/motd/backup.json
+
+secret:
+  dry_run: true
+  file: data/secret/podman.yaml
