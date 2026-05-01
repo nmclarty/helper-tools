@@ -20,7 +20,6 @@ let
 in
 {
   options.services.helper-tools = {
-    enable = mkEnableOption "Enable helper-tools";
     backup = {
       enable = mkEnableOption "Enable backup";
       interval = mkOption {
@@ -72,12 +71,12 @@ in
   };
 
   config = mkMerge [
-    (mkIf cfg.enable {
+    {
       environment.etc."helper-tools/config.yaml".source = yaml.generate "helper-tools-config.yaml" {
         backup = mkIf cfg.backup.enable cfg.backup.settings;
         secret = mkIf cfg.secret.enable cfg.secret.settings;
       };
-    })
+    }
 
     (mkIf (with cfg; enable && backup.enable) {
       systemd = {
@@ -128,7 +127,7 @@ in
           export PATH=$PATH:${makeBinPath [ pkgs.podman ]}
           ${helper-tools} secret || true
         '';
-      }
+      };
     })
   ];
 }
