@@ -73,12 +73,18 @@ in
         };
       };
     };
+    settings = mkOption {
+      type = yaml.type;
+      default = { };
+      description = "The final configuration for helper-tools/config.yaml.";
+    };
   };
 
   config = mkIf cfg.enable {
     home.packages = [ flake.packages.${pkgs.stdenv.hostPlatform.system}.default ];
-    xdg.configFile."helper-tools/config.yaml".source = yaml.generate "helper-tools-config.yaml" {
-      motd = mkIf cfg.motd.enable {
+
+    programs.helper-tools.settings = mkIf cfg.motd.enable {
+      motd = {
         inherit (cfg.motd) columns;
         modules =
           (optional cfg.motd.system.enable {
@@ -95,5 +101,8 @@ in
           });
       };
     };
+
+    xdg.configFile."helper-tools/config.yaml".source =
+      yaml.generate "helper-tools-config.yaml" cfg.settings;
   };
 }

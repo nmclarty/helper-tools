@@ -69,17 +69,21 @@ in
         };
       };
     };
+    settings = mkOption {
+      type = yaml.type;
+      default = { };
+      description = "The final configuration for helper-tools/config.yaml.";
+    };
   };
 
   config = mkMerge [
     {
-      environment.etc."helper-tools/config.yaml".source = yaml.generate "helper-tools-config.yaml" {
-        backup = mkIf cfg.backup.enable cfg.backup.settings;
-        secret = mkIf cfg.secret.enable cfg.secret.settings;
-      };
+      environment.etc."helper-tools/config.yaml".source =
+        yaml.generate "helper-tools-config.yaml" cfg.settings;
     }
 
     (mkIf cfg.backup.enable {
+      cfg.settings = cfg.backup.settings;
       systemd = {
         tmpfiles.rules = [ "d ${cfg.backup.settings.zpool.directory}" ];
         services = {
@@ -122,8 +126,9 @@ in
     })
 
     (mkIf cfg.secret.enable {
+      cfg.settings = cfg.secret.settings;
       system.activationScripts.helper-tools = {
-        deps = cfg.secret.dependences;
+        deps = cfg.secret.dependencies;
         text = ''
           export PATH=$PATH:${makeBinPath [ pkgs.podman ]}
           ${helper-tools} secret || true
