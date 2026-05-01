@@ -13,6 +13,7 @@ let
     mkIf
     mkForce
     mkMerge
+    makeBinPath
     ;
   cfg = config.services.helper-tools;
   yaml = pkgs.formats.yaml { };
