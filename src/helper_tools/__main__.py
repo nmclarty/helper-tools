@@ -20,30 +20,37 @@ from .deploy.command import Deploy
 from .motd.command import Motd
 from .secret.command import Secret
 
+logger = logging.getLogger(__name__)
 err = Console(stderr=True)
 rich.traceback.install()
 
 
-def find_config_files(name: str, file: str):
-    return [
-        
-        environ.get("HELPER_TOOLS_CONFIG_FILE", file)
-        Path(f)
-        for base in [
-            "/etc",
-            environ.get("XDG_CONFIG_HOME", Path.home() / ".config"),
-        ]
-    ]
+def user_config_dir() -> Path:
+    return Path(environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
 
 
 class Settings(BaseSettings):
+    """Unified CLI for system management tools
+    
+    Looks for config files in:
+      - /etc/helper-tools/config.yaml
+      - ~/.config/helper-tools/config.yaml
+      - $HELPER_TOOLS_CONFIG_FILE or ./config.yaml
+    """
+
     model_config = SettingsConfigDict(
         cli_use_class_docs_for_groups=True,
         cli_hide_none_type=True,
         cli_avoid_json=True,
         cli_implicit_flags="toggle",
         cli_kebab_case=True,
-        yaml_file=find_config_files("helper-tools", "config.yaml"),
+        env_prefix="HELPER_TOOLS_",
+        env_nested_delimiter="__",
+        yaml_file=[
+            "/etc/helper-tools/config.yaml",
+            user_config_dir() / "helper-tools" / "config.yaml",
+            environ.get("HELPER_TOOLS_CONFIG_FILE", "config.yaml"),
+        ],
     )
     log_level: str = Field(description="logging level to use", default="INFO")
 
@@ -75,13 +82,13 @@ class Settings(BaseSettings):
             format="%(message)s",
             handlers=[RichHandler()],
         )
+        logger.debug(f"Using config: {self.model_dump()}")
         CliApp.run_subcommand(self)
 
 
 def main() -> None:
     """Wrapper for pydantic-settings's cli_cmd, since it
     needs to be called with CliApp.run to work properly."""
-    print(find_config_files("helper-tools", "config.yaml"))
     try:
         CliApp.run(Settings)
     except ValidationError as e:

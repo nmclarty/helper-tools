@@ -16,6 +16,7 @@ let
     makeBinPath
     ;
   cfg = config.services.helper-tools.backup;
+  yaml = pkgs.formats.yaml { };
   helper-tools = "${flake.packages.${pkgs.stdenv.hostPlatform.system}.default}/bin/helper-tools";
 in
 {
@@ -76,6 +77,8 @@ in
           ];
           environment = {
             PYTHONUNBUFFERED = "1"; # otherwise stdout is delayed
+            HELPER_TOOLS = "${builtins.toJSON cfg.settings}";
+            # HELPER_TOOLS_ZPOOL = "${builtins.toJSON cfg.settings.zpool}";
           };
           serviceConfig = {
             Type = "oneshot";
