@@ -37,11 +37,14 @@ let
   );
 in
 {
-  _file = "helper-tools.nix";
   options.programs.helper-tools = {
     enable = mkEnableOption "Enable helper-tools";
     motd = {
-      enable = mkEnableOption "Enable motd";
+      enable = mkOption {
+        type = types.bool;
+        default = true;
+        description = "Enable motd";
+      };
       columns = mkOption {
         type = types.bool;
         default = true;
@@ -93,26 +96,30 @@ in
   config = mkIf cfg.enable {
     home.packages = [ flake.packages.${pkgs.stdenv.hostPlatform.system}.default ];
 
-    programs.helper-tools.settings = mkIf cfg.motd.enable {
-      motd = {
-        inherit (cfg.motd) columns;
-        modules =
-          (optional cfg.motd.system.enable {
-            module = "system";
-            inherit (cfg.motd.system) services;
-          })
-          ++ (optional cfg.motd.update.enable {
-            module = "update";
-            file = "${updateData}";
-          })
-          ++ (optional cfg.motd.backup.enable {
-            module = "backup";
-            inherit (cfg.motd.backup) file;
-          });
-      };
-    };
+    programs.helper-tools.settings = mkMerge [
+      (mkIf cfg.motd.enable {
+        motd = {
+          inherit (cfg.motd) columns;
+          modules =
+            (optional cfg.motd.system.enable {
+              module = "system";
+              inherit (cfg.motd.system) services;
+            })
+            ++ (optional cfg.motd.update.enable {
+              module = "update";
+              file = "${updateData}";
+            })
+            ++ (optional cfg.motd.backup.enable {
+              module = "backup";
+              inherit (cfg.motd.backup) file;
+            });
+        };
 
-    xdg.configFile."helper-tools/config.yaml".source =
-      yaml.generate "helper-tools-config.yaml" cfg.settings;
+      })
+    ];
+
+    xdg.configFile."helper-tools/config.yaml".source = (
+      yaml.generate "helper-tools-config.yaml" cfg.settings
+    );
   };
 }
