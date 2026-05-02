@@ -12,6 +12,7 @@ class ZpoolConfig(BaseModel):
     directory: DirectoryPath
     datasets: list[str]
 
+
 class Snapshot:
     """Low-level class operating on a ZFS snapshot."""
 
@@ -60,7 +61,7 @@ class SnapshotManager:
         if len(self.services) != 0:
             logger.debug(f"Stopping services: {self.services}")
             if not self.dry_run:
-                run(["systemctl", "stop", *self.services], check=True) 
+                run(["systemctl", "stop", *self.services], check=True)
                 logger.info("Stopped services")
 
         logger.debug(f"Creating snapshots: {[str(s) for s in self.snapshots]}")

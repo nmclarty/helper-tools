@@ -10,7 +10,6 @@ from pydantic import BaseModel, FilePath, Field
 logger = logging.getLogger(__name__)
 
 
-
 def flatten(d: dict, parent: str = "", sep: str = "__") -> dict:
     items = {}
     for k, v in d.items():
@@ -20,6 +19,7 @@ def flatten(d: dict, parent: str = "", sep: str = "__") -> dict:
         else:
             items[new_key] = v
     return items
+
 
 class Secret(BaseModel):
     """Declaratively load secrets into Podman"""
@@ -40,7 +40,7 @@ class Secret(BaseModel):
         with self.file.open() as file:
             secrets = flatten(yaml.safe_load(file))
 
-        logger.debug(f"Adding {len(secrets)} secrets from {self.file}" )
+        logger.debug(f"Adding {len(secrets)} secrets from {self.file}")
         if not self.dry_run:
             tasks = [
                 asyncio.to_thread(

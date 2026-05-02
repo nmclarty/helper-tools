@@ -24,9 +24,16 @@ err = Console(stderr=True)
 rich.traceback.install()
 
 
-def user_config_path(name: str) -> Path:
-    config = Path(environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
-    return config / name / "config.yaml"
+def find_config_files(name: str, file: str):
+    return [
+        
+        environ.get("HELPER_TOOLS_CONFIG_FILE", file)
+        Path(f)
+        for base in [
+            "/etc",
+            environ.get("XDG_CONFIG_HOME", Path.home() / ".config"),
+        ]
+    ]
 
 
 class Settings(BaseSettings):
@@ -36,11 +43,7 @@ class Settings(BaseSettings):
         cli_avoid_json=True,
         cli_implicit_flags="toggle",
         cli_kebab_case=True,
-        yaml_file=[
-            "/etc/helper-tools/config.yaml",
-            user_config_path("helper-tools"),
-            "config.yaml",
-        ],
+        yaml_file=find_config_files("helper-tools", "config.yaml"),
     )
     log_level: str = Field(description="logging level to use", default="INFO")
 
@@ -78,6 +81,7 @@ class Settings(BaseSettings):
 def main() -> None:
     """Wrapper for pydantic-settings's cli_cmd, since it
     needs to be called with CliApp.run to work properly."""
+    print(find_config_files("helper-tools", "config.yaml"))
     try:
         CliApp.run(Settings)
     except ValidationError as e:
