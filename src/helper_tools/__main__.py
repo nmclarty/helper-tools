@@ -16,7 +16,6 @@ from pydantic_settings import (
 )
 
 from .backup.command import Backup
-from .deploy.command import Deploy
 from .motd.command import Motd
 from .secret.command import Secret
 
@@ -42,7 +41,7 @@ class Settings(BaseSettings):
         cli_use_class_docs_for_groups=True,
         cli_hide_none_type=True,
         cli_avoid_json=True,
-        cli_implicit_flags="toggle",
+        cli_implicit_flags=True,
         cli_kebab_case=True,
         env_prefix="HELPER_TOOLS_",
         env_nested_delimiter="__",
@@ -55,7 +54,6 @@ class Settings(BaseSettings):
     log_level: str = Field(description="logging level to use", default="INFO")
 
     backup: CliSubCommand[Backup]
-    deploy: CliSubCommand[Deploy]
     motd: CliSubCommand[Motd]
     secret: CliSubCommand[Secret]
 

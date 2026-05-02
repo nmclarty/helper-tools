@@ -38,7 +38,7 @@ class Secret(BaseModel):
             logger.info("Removed existing secrets from Podman")
 
         with self.file.open() as file:
-            secrets = flatten(yaml.safe_load(file))
+            secrets = flatten(yaml.safe_load(file) or {})
 
         logger.debug(f"Adding {len(secrets)} secrets from {self.file}")
         if not self.dry_run:
