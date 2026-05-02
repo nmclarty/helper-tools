@@ -74,7 +74,7 @@ in
           ];
           environment = {
             PYTHONUNBUFFERED = "1"; # otherwise stdout is delayed
-            HELPER_TOOLS__BACKUP = "${builtins.toJSON cfg.settings}";
+            HELPER_TOOLS_BACKUP = "${builtins.toJSON cfg.settings}";
           };
           serviceConfig = {
             Type = "oneshot";
