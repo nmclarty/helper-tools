@@ -77,8 +77,8 @@ in
       backup = {
         enable = mkOption {
           type = types.bool;
-          default = with osConfig; services ? py-backup && services.py-backup.enable;
-          description = "Whether to enable the module. Will be enabled automatically with py-backup.";
+          default = with osConfig; services ? helper-tools.backup && services.helper-tools.backup.enable;
+          description = "Whether to enable the module. Will be enabled automatically with helper-tools.backup.";
         };
         file = mkOption {
           type = types.str;
