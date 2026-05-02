@@ -11,12 +11,9 @@ let
     mkOption
     types
     mkIf
-    mkForce
-    mkMerge
     makeBinPath
     ;
   cfg = config.services.helper-tools.secret;
-  yaml = pkgs.formats.yaml { };
   helper-tools = "${flake.packages.${pkgs.stdenv.hostPlatform.system}.default}/bin/helper-tools";
 in
 {

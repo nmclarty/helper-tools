@@ -12,11 +12,8 @@ let
     types
     mkIf
     mkForce
-    mkMerge
-    makeBinPath
     ;
   cfg = config.services.helper-tools.backup;
-  yaml = pkgs.formats.yaml { };
   helper-tools = "${flake.packages.${pkgs.stdenv.hostPlatform.system}.default}/bin/helper-tools";
 in
 {

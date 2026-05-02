@@ -14,6 +14,7 @@ let
     types
     mkIf
     optional
+    mkMerge
     ;
   cfg = config.programs.helper-tools;
   yaml = pkgs.formats.yaml { };
@@ -31,7 +32,7 @@ let
               "self"
               "nixpkgs"
             ]
-            ++ cfg.update.inputs
+            ++ cfg.motd.update.inputs
           );
     }
   );
@@ -87,7 +88,7 @@ in
       };
     };
     settings = mkOption {
-      type = yaml.type;
+      inherit (yaml) type;
       default = { };
       description = "The final configuration for helper-tools/config.yaml.";
     };
@@ -118,8 +119,7 @@ in
       })
     ];
 
-    xdg.configFile."helper-tools/config.yaml".source = (
-      yaml.generate "helper-tools-config.yaml" cfg.settings
-    );
+    xdg.configFile."helper-tools/config.yaml".source =
+      yaml.generate "helper-tools-config.yaml" cfg.settings;
   };
 }
