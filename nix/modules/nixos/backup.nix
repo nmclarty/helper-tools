@@ -93,7 +93,7 @@ in
           enable = true;
           wantedBy = [ "timers.target" ];
           timerConfig = {
-            OnCalendar = cfg.backup.interval;
+            OnCalendar = cfg.interval;
             Persistent = true;
           };
         };
