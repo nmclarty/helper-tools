@@ -37,7 +37,7 @@ in
 
   config = mkIf cfg.enable {
     system.activationScripts.helper-tools = {
-      deps = cfg.secret.dependencies;
+      deps = cfg.dependencies;
       text = ''
         export PATH=$PATH:${makeBinPath [ pkgs.podman ]}
         ${helper-tools} secret --file ${cfg.settings.file} || true
