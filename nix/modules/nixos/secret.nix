@@ -36,7 +36,6 @@ in
   };
 
   config = mkIf cfg.enable {
-    services.helper-tools.settings = cfg.secret.settings;
     system.activationScripts.helper-tools = {
       deps = cfg.secret.dependencies;
       text = ''
