@@ -13,18 +13,18 @@ let
     mkIf
     mkForce
     ;
-  cfg = config.services.py-backup;
-  toml = pkgs.formats.toml { };
+  cfg = config.services.helper-tools.backup;
+  helper-tools = "${flake.packages.${pkgs.stdenv.hostPlatform.system}.default}/bin/helper-tools";
 in
 {
-  options.services.py-backup = {
-    enable = mkEnableOption "Enable system backup services.";
+  options.services.helper-tools.backup = {
+    enable = mkEnableOption "Enable backup";
     interval = mkOption {
       type = types.str;
       description = "Run backup services at this interval.";
     };
     command = mkOption {
-      type = with types; listOf str;
+      type = types.str;
       description = "Wrapped backup command to run (should be absolute path)";
     };
     settings = {
@@ -74,12 +74,11 @@ in
           ];
           environment = {
             PYTHONUNBUFFERED = "1"; # otherwise stdout is delayed
-            PY_BACKUP_CONFIG_FILE = "${toml.generate "py-backup-config.toml" cfg.settings}";
-            PY_BACKUP_COMMAND = "${builtins.toJSON cfg.command}";
+            HELPER_TOOLS_BACKUP = "${builtins.toJSON cfg.settings}";
           };
           serviceConfig = {
             Type = "oneshot";
-            ExecStart = "${flake.packages.${pkgs.stdenv.hostPlatform.system}.default}/bin/py-backup";
+            ExecStart = "${helper-tools} backup -- '${cfg.command}'";
           };
         };
       };

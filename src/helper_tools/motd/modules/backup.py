@@ -13,7 +13,7 @@ from pydantic import (
     model_validator,
 )
 
-from py_motd.utils import fmt_delta, sizeof_fmt
+from ..utils import fmt_delta, sizeof_fmt
 
 
 class Data(BaseModel):

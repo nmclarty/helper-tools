@@ -6,7 +6,7 @@ from typing import Literal
 import psutil
 from pydantic import BaseModel, computed_field, field_validator
 
-from py_motd.utils import fmt_delta, os_version
+from ..utils import fmt_delta, os_version
 
 logger = logging.getLogger(__name__)
 
@@ -54,4 +54,4 @@ class System(BaseModel):
             if failed > 0:
                 output += f", [red]{failed}[/red] failed"
 
-        return output
+        return output + "\n"

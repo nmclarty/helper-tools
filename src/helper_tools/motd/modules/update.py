@@ -7,7 +7,7 @@ from rich.console import Group
 from rich.padding import Padding
 from rich.table import Table
 
-from py_motd.utils import fmt_delta, fmt_table
+from ..utils import fmt_delta, fmt_table
 
 
 class Input(BaseModel):
