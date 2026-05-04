@@ -23,11 +23,11 @@ in
       type = types.str;
       description = "Run backup services at this interval.";
     };
-    command = mkOption {
-      type = types.str;
-      description = "Wrapped backup command to run (should be absolute path)";
-    };
     settings = {
+      command = mkOption {
+        type = with types; listOf str;
+        description = "Wrapped backup command to run (should be absolute path)";
+      };
       services = mkOption {
         type = with types; listOf str;
         default = [ ];
@@ -78,7 +78,7 @@ in
           };
           serviceConfig = {
             Type = "oneshot";
-            ExecStart = "${helper-tools} backup -- '${cfg.command}'";
+            ExecStart = "${helper-tools} backup";
           };
         };
       };
