@@ -30,7 +30,7 @@ def user_config_dir() -> Path:
 
 class Settings(BaseSettings):
     """Unified CLI for system management tools
-    
+
     Looks for config files in:
       - /etc/helper-tools/config.yaml
       - ~/.config/helper-tools/config.yaml

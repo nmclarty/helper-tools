@@ -12,7 +12,9 @@ logger = logging.getLogger(__name__)
 class Backup(BaseModel):
     """Manage snapshots for a backup commmand"""
 
-    command: CliPositionalArg[list[str]] = Field(description="backup commmand to run")
+    command: CliPositionalArg[list[str]] = Field(
+        description="backup commmand to run", default=["sh", "-c", "exit 1"]
+    )
     services: list[str] = Field(description="services to stop/start", default=[])
     dry_run: bool = Field(description="show what would be done", default=False)
     zpool: ZpoolConfig

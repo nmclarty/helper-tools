@@ -2,15 +2,15 @@ import logging
 from pathlib import Path
 from subprocess import DEVNULL, run
 
-from pydantic import BaseModel, DirectoryPath
+from pydantic import BaseModel, DirectoryPath, Field
 
 logger = logging.getLogger(__name__)
 
 
 class ZpoolConfig(BaseModel):
-    name: str
-    directory: DirectoryPath
-    datasets: list[str]
+    name: str = Field(description="name of the ZFS Pool containing the datasets")
+    datasets: list[str] = Field(description="name(s) of the ZFS datasets to snapshot")
+    directory: DirectoryPath = Field(description="where to mount snapshots for backup")
 
 
 class Snapshot:
