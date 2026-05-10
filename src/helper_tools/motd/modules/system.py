@@ -2,6 +2,7 @@ import logging
 import subprocess
 from functools import cached_property
 from typing import Literal
+import platform
 
 import psutil
 from pydantic import BaseModel, computed_field, field_validator
@@ -43,6 +44,7 @@ class System(BaseModel):
         output = (
             f"[bold]{self.name}:[/bold]\n"
             f"  Version: [blue]{os_version()}[/blue]\n"
+            f"  Kernel: [blue]{platform.release().split("-")[0]}[/blue]\n"
             f"  Uptime: {fmt_delta(psutil.boot_time())}\n"
             f"  Load: {', '.join([str(round(t, 2)) for t in psutil.getloadavg()])}\n"
         )
