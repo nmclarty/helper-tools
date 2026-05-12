@@ -55,5 +55,6 @@ class System(BaseModel):
             failed = len(self.services) - active
             if failed > 0:
                 output += f", [red]{failed}[/red] failed"
+            output += "\n"
 
-        return output + "\n"
+        return output
