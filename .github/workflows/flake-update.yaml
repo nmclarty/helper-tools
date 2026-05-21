@@ -6,7 +6,7 @@ on:
       nixpkgsOnly:
         description: Update nixpkgs only?
         required: true
-        default: true
+        default: false
         type: boolean
 
 
@@ -35,17 +35,17 @@ jobs:
         with:
           use-flakehub: false
 
-      - name: Update flake.lock
+      - name: Update flake.lock (nixpkgs only)
         uses: DeterminateSystems/update-flake-lock@v28
-        if: ${{ inputs.nixpkgsOnly == 'true' }}
-        with:
-          pr-title: "Flake: Update nixpkgs"
-          pr-labels: automated
-
-      - name: Update flake.lock
-        uses: DeterminateSystems/update-flake-lock@v28
-        if: ${{ inputs.nixpkgsOnly == 'false' }}
+        if: ${{ inputs.nixpkgsOnly != false }}
         with:
           inputs: nixpkgs
           pr-title: "Flake: Update nixpkgs"
+          pr-labels: automated
+
+      - name: Update flake.lock (all inputs)
+        uses: DeterminateSystems/update-flake-lock@v28
+        if: ${{ inputs.nixpkgsOnly == false }}
+        with:
+          pr-title: "Flake: Update all inputs"
           pr-labels: automated
