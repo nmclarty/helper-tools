@@ -1,0 +1,45 @@
+name: "Flake: Update"
+
+on:
+  workflow_dispatch:
+    inputs:
+      toUpdate:
+        description: Which flake inputs to update (blank for all)
+        required: true
+        default: nixpkgs
+        type: choice
+        options:
+          - nixpkgs
+          - ""
+
+  schedule:
+    - cron: "0 0 * * 0"
+
+jobs:
+  flake-update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install nix
+        uses: DeterminateSystems/nix-installer-action@v21
+        with:
+          determinate: false
+
+      - name: Use nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@v13
+        with:
+          use-flakehub: false
+
+      - name: Update flake.lock
+        uses: DeterminateSystems/update-flake-lock@v28
+        with:
+          inputs: ${{ inputs.toUpdate }}
+          pr-title: "Flake: Update"
+          pr-labels: automated
