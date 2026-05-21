@@ -3,14 +3,12 @@ name: "Flake: Update"
 on:
   workflow_dispatch:
     inputs:
-      toUpdate:
-        description: Which flake inputs to update (blank for all)
+      nixpkgsOnly:
+        description: Update nixpkgs only?
         required: true
-        default: nixpkgs
-        type: choice
-        options:
-          - nixpkgs
-          - ""
+        default: true
+        type: boolean
+
 
   schedule:
     - cron: "0 0 * * 0"
@@ -25,7 +23,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install nix
         uses: DeterminateSystems/nix-installer-action@v21
@@ -39,7 +37,15 @@ jobs:
 
       - name: Update flake.lock
         uses: DeterminateSystems/update-flake-lock@v28
+        if: ${{ inputs.nixpkgsOnly == 'true' }}
         with:
-          inputs: ${{ inputs.toUpdate }}
-          pr-title: "Flake: Update"
+          pr-title: "Flake: Update nixpkgs"
+          pr-labels: automated
+
+      - name: Update flake.lock
+        uses: DeterminateSystems/update-flake-lock@v28
+        if: ${{ inputs.nixpkgsOnly == 'false' }}
+        with:
+          inputs: nixpkgs
+          pr-title: "Flake: Update nixpkgs"
           pr-labels: automated
