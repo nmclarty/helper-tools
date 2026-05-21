@@ -1,6 +1,14 @@
 name: "Flake: Update"
 
 on:
+  workflow_call:
+    inputs:
+      nixpkgsOnly:
+        description: Update nixpkgs only?
+        required: true
+        default: false
+        type: boolean
+
   workflow_dispatch:
     inputs:
       nixpkgsOnly:
