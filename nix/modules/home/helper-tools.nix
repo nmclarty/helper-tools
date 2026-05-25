@@ -20,20 +20,11 @@ let
   yaml = pkgs.formats.yaml { };
   updateData = pkgs.writeText "update.json" (
     builtins.toJSON {
-      inputs =
-        map
-          (k: {
-            name = k;
-            rev = inputs.${k}.dirtyShortRev or inputs.${k}.shortRev or "";
-            modified = inputs.${k}.lastModified or 0;
-          })
-          (
-            [
-              "self"
-              "nixpkgs"
-            ]
-            ++ cfg.motd.update.inputs
-          );
+      inputs = map (k: {
+        name = k;
+        rev = inputs.${k}.dirtyShortRev or inputs.${k}.shortRev or "";
+        modified = inputs.${k}.lastModified or 0;
+      }) cfg.motd.update.inputs;
     }
   );
 in
@@ -70,7 +61,10 @@ in
         };
         inputs = mkOption {
           type = types.listOf types.str;
-          default = [ "nixpkgs" ];
+          default = [
+            "self"
+            "nixpkgs"
+          ];
           description = "List of flake inputs to include in the MOTD.";
         };
       };
