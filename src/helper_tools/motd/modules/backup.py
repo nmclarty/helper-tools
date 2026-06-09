@@ -58,12 +58,13 @@ class Backup(BaseModel):
         try:
             with self.file.open() as file:
                 data = Data.model_validate_json(file.read())
-                output += (
-                    f"  Status: {data.status} ({data.age})\n"
-                    f"  Added: {data.added}\n"
-                    f"  Total: {data.total}\n"
-                )
+
+            output += (
+                f"  Status: {data.status} ({data.age})\n"
+                f"  Added: {data.added}\n"
+                f"  Total: {data.total}\n"
+            )
         except ValidationError:
-            output += "  Status: [red]Failed to parse status file[/red]\n"
+            output += "  Status: [red]Failed to parse file[/red]\n"
 
         return output

@@ -1,7 +1,6 @@
 import logging
 import subprocess
 import asyncio
-from typing import Union
 
 import yaml
 from pydantic import BaseModel, FilePath, Field

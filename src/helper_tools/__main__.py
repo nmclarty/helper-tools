@@ -6,7 +6,7 @@ from os import environ
 import rich.traceback
 from rich.console import Console
 from rich.logging import RichHandler
-from pydantic import Field, ValidationError, BaseModel
+from pydantic import Field, ValidationError
 from pydantic_settings import (
     BaseSettings,
     SettingsConfigDict,

@@ -1,5 +1,5 @@
 import platform
-from datetime import datetime
+from datetime import datetime, timezone
 
 from rich.table import Table
 
@@ -14,7 +14,10 @@ def fmt_delta(time: float | datetime) -> str:
         case float():
             delta = datetime.now() - datetime.fromtimestamp(time)
         case datetime():
-            delta = datetime.now() - time
+            if time.tzinfo is not None:
+                delta = datetime.now(timezone.utc) - time
+            else:
+                delta = datetime.now() - time
         case _:
             raise TypeError()
 
