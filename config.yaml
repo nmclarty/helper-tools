@@ -10,8 +10,8 @@ motd:
   modules:
     - module: system
 
-    - module: update
-      file: data/motd/update.json
+    - module: flake
+      file: data/motd/flake.json
 
     - module: services
       units: ["running", "succeeded", "failed"]

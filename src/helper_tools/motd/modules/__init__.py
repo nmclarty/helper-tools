@@ -1,5 +1,5 @@
 from .system import System
-from .update import Update
+from .flake import Flake
 from .services import Services
 
-__all__ = ["System", "Update", "Services"]
+__all__ = ["System", "Flake", "Services"]

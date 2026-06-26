@@ -6,12 +6,12 @@ from pydantic import BaseModel, Field
 from rich.console import Console
 from rich.columns import Columns
 
-from .modules import System, Update, Services
+from .modules import *
 
 logger = logging.getLogger(__name__)
 console = Console(highlight=False)
 
-Module = Annotated[Union[System, Update, Services], Field(discriminator="module")]
+Module = Annotated[Union[System, Flake, Services], Field(discriminator="module")]
 
 
 class Motd(BaseModel):

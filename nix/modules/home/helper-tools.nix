@@ -18,13 +18,13 @@ let
     ;
   cfg = config.programs.helper-tools;
   yaml = pkgs.formats.yaml { };
-  updateData = pkgs.writeText "update.json" (
+  flakeData = pkgs.writeText "flake.json" (
     builtins.toJSON {
       inputs = map (k: {
         name = k;
         rev = inputs.${k}.dirtyShortRev or inputs.${k}.shortRev or "";
         modified = inputs.${k}.lastModified or 0;
-      }) cfg.motd.update.inputs;
+      }) cfg.motd.flake.inputs;
     }
   );
 in
@@ -53,7 +53,7 @@ in
           description = "List of services to monitor in the MOTD.";
         };
       };
-      update = {
+      flake = {
         enable = mkOption {
           type = types.bool;
           default = true;
@@ -103,9 +103,9 @@ in
               module = "system";
               inherit (cfg.motd.system) services;
             })
-            ++ (optional cfg.motd.update.enable {
-              module = "update";
-              file = "${updateData}";
+            ++ (optional cfg.motd.flake.enable {
+              module = "flake";
+              file = "${flakeData}";
             })
             ++ (optional cfg.motd.services.enable {
               module = "services";
