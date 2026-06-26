@@ -6,12 +6,14 @@ from pydantic import BaseModel, Field
 from rich.console import Console
 from rich.columns import Columns
 
-from .modules import Backup, System, Update
+from .modules import Backup, System, Update, Services
 
 logger = logging.getLogger(__name__)
 console = Console(highlight=False)
 
-Module = Annotated[Union[Backup, System, Update], Field(discriminator="module")]
+Module = Annotated[
+    Union[Backup, System, Update, Services], Field(discriminator="module")
+]
 
 
 class Motd(BaseModel):
@@ -29,4 +31,4 @@ class Motd(BaseModel):
         if self.columns:
             console.print(Columns(modules, column_first=True))
         else:
-            console.print(*modules, end="")
+            console.print(*modules, sep="", end="")
