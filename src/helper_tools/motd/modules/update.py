@@ -15,11 +15,27 @@ from ..utils import fmt_delta, fmt_table
 class Status(BaseModel):
     need_to_reboot: bool
     is_suspended: bool
-    deployment_status: str = Field(validation_alias=AliasPath("deployer", "deployment", "status"))
-    ended_at: datetime = Field(validation_alias=AliasPath("deployer", "deployment", "ended_at"))
-    commit_id: str = Field(validation_alias=AliasPath("deployer", "deployment", "generation", "selected_commit_id"))
-    commit_msg: str = Field(validation_alias=AliasPath("deployer", "deployment", "generation", "selected_commit_msg"))
-    is_testing: bool = Field(validation_alias=AliasPath("deployer", "deployment", "generation", "selected_branch_is_testing"))
+    deployment_status: str = Field(
+        validation_alias=AliasPath("deployer", "deployment", "status")
+    )
+    ended_at: datetime = Field(
+        validation_alias=AliasPath("deployer", "deployment", "ended_at")
+    )
+    commit_id: str = Field(
+        validation_alias=AliasPath(
+            "deployer", "deployment", "generation", "selected_commit_id"
+        )
+    )
+    commit_msg: str = Field(
+        validation_alias=AliasPath(
+            "deployer", "deployment", "generation", "selected_commit_msg"
+        )
+    )
+    is_testing: bool = Field(
+        validation_alias=AliasPath(
+            "deployer", "deployment", "generation", "selected_branch_is_testing"
+        )
+    )
 
 
 class Input(BaseModel):
@@ -47,7 +63,7 @@ class Update(BaseModel):
                     check=True,
                     capture_output=True,
                     text=True,
-                    timeout=1
+                    timeout=1,
                 ).stdout
             )
 
@@ -66,7 +82,7 @@ class Update(BaseModel):
                 f"  Status: {','.join([f for f in flags if f])} ({built_ago})"
             )
 
-        except FileNotFoundError,CalledProcessError,TimeoutExpired:
+        except FileNotFoundError, CalledProcessError, TimeoutExpired:
             group.renderables.append("  Commit: [red]Failed to run comin[/red]")
         except ValidationError:
             group.renderables.append("  Commit: [red]Failed to parse status[/red]")

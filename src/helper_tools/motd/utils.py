@@ -27,7 +27,7 @@ def fmt_delta(time: float | datetime) -> str:
         color = "cyan"
     else:
         color = "red"
-    return f"[{color}]{str(delta).split('.')[0]}[/{color}]"
+    return f"[{color}]{str(delta).split('.')[0]}[/]"
 
 
 def fmt_table(name: str) -> Table:

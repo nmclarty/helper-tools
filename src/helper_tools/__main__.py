@@ -80,7 +80,6 @@ class Settings(BaseSettings):
             format="%(message)s",
             handlers=[RichHandler()],
         )
-        logger.debug(f"Using config: {self.model_dump()}")
         CliApp.run_subcommand(self)
 
 
