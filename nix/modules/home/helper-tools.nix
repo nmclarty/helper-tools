@@ -68,16 +68,19 @@ in
           description = "List of flake inputs to include in the MOTD.";
         };
       };
-      backup = {
+      services = {
         enable = mkOption {
           type = types.bool;
-          default = with osConfig; services ? helper-tools.backup && services.helper-tools.backup.enable;
-          description = "Whether to enable the module. Will be enabled automatically with helper-tools.backup.";
+          default = pkgs.stdenv.isLinux;
+          description = "Whether to enable the module. Only works on Linux.";
         };
-        file = mkOption {
-          type = types.str;
-          default = "/var/lib/resticprofile/status.json";
-          description = "Path to the resticprofile status file.";
+        units = mkOption {
+          type = with types; listOf str;
+          description = "List of unit names to monitor, to make sure they are running.";
+        };
+        tasks = mkOption {
+          type = with types; listOf str;
+          description = "List of unit names to monitor, to make sure they have succeeded.";
         };
       };
     };
@@ -104,9 +107,9 @@ in
               module = "update";
               file = "${updateData}";
             })
-            ++ (optional cfg.motd.backup.enable {
-              module = "backup";
-              inherit (cfg.motd.backup) file;
+            ++ (optional cfg.motd.services.enable {
+              module = "services";
+              inherit (cfg.motd.services) units tasks;
             });
         };
 

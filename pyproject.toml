@@ -8,8 +8,7 @@ dependencies = [
     "rich>=14.2.0",
     "pydantic-settings>=2.12.0",
     "psutil>=7.2.1",
-    "pyyaml>=6.0.3",
-    "pystemd>=0.15.3; sys_platform == 'linux'",
+    "pyyaml>=6.0.3"
 ]
 
 [project.scripts]

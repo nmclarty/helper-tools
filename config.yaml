@@ -14,8 +14,8 @@ motd:
       file: data/motd/update.json
 
     - module: services
-      units: ["traefik"]
-      tasks: ["backup"]
+      units: ["running", "succeeded", "failed"]
+      tasks: ["running", "succeeded", "failed"]
 
 secret:
   dry_run: true
