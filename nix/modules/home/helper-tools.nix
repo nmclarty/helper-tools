@@ -71,7 +71,7 @@ in
       services = {
         enable = mkOption {
           type = types.bool;
-          default = pkgs.stdenv.isLinux;
+          default = with cfg.motd.services; pkgs.stdenv.isLinux && units != [ ] || tasks != [ ];
           description = "Whether to enable the module. Only works on Linux.";
         };
         units = mkOption {
