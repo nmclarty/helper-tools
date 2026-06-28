@@ -4,12 +4,13 @@ from pydantic import (
     BaseModel,
     computed_field,
     field_validator,
-    FilePath,
     model_validator,
     Field,
+    DirectoryPath,
+    ValidationInfo,
 )
 from typing import Literal, Any
-from subprocess import run, DEVNULL
+from subprocess import run
 from ..utils import fmt_table
 from rich.console import Group
 from rich.padding import Padding
@@ -79,21 +80,22 @@ class Unit(BaseModel):
 class Services(BaseModel):
     module: Literal["services"]
     name: str = "Services"
+    stub_dir: DirectoryPath | None = Field(default=None)
     units: list[Unit] = []
     tasks: list[Unit] = []
 
+    @model_validator(mode="before")
+    @classmethod
+    def binary_fallback(cls, data: Any):
+        if isinstance(data, dict):
+            if "stub_dir" not in data and not which("systemctl"):
+                raise ValueError("'systemctl' not found, and no 'stub_dir' defined")
+        return data
+
     @field_validator("units", "tasks", mode="before")
     @classmethod
-    def load_from_name(cls, names: list[str]):
-        if not which("systemctl"):
-            stub_dir = Path("data/motd/services")
-            logger.warning(
-                "Systemctl not found. Using unit file stubs in '%s'", stub_dir
-            )
-        else:
-            stub_dir = None
-
-        return [Unit.from_name(name, stub_dir) for name in names]
+    def load_from_name(cls, names: list[str], info: ValidationInfo):
+        return [Unit.from_name(name, info.data["stub_dir"]) for name in names]
 
     def run(self) -> Group:
         group = Group(f"[bold]{self.name}:[/bold]")
