@@ -1,15 +1,19 @@
 import logging
 from pathlib import Path
-from subprocess import DEVNULL, run
+from subprocess import DEVNULL, CalledProcessError, run
 
 from pydantic import BaseModel, DirectoryPath, Field
+
+from .utils import run_cmd
 
 logger = logging.getLogger(__name__)
 
 
 class ZpoolConfig(BaseModel):
     name: str = Field(description="name of the ZFS Pool containing the datasets")
-    datasets: list[str] = Field(description="name(s) of the ZFS datasets to snapshot")
+    datasets: list[str] = Field(
+        description="name(s) of the ZFS datasets to snapshot", min_length=1
+    )
     directory: DirectoryPath = Field(description="where to mount snapshots for backup")
 
 
@@ -20,75 +24,54 @@ class Snapshot:
         self.name = f"{zpool}/{name}@backup"
         self.path = Path(f"{directory}/{name}")
 
-    def __str__(self) -> str:
-        return f"{self.name}:{self.path}"
-
     def cleanup(self) -> None:
         """Unmount and destroy snapshot."""
         if self.path.is_mount():
-            run(["umount", self.path], check=True)
+            run_cmd(["umount", str(self.path)])
 
-        check_exists = run(
-            ["zfs", "list", self.name],
-            check=False,
-            stdout=DEVNULL,
-            stderr=DEVNULL,
+        exists = run(
+            ["zfs", "list", self.name], check=False, stdout=DEVNULL, stderr=DEVNULL
         )
-        if check_exists.returncode == 0:
-            run(["zfs", "destroy", self.name], check=True)
+        if exists.returncode == 0:
+            run_cmd(["zfs", "destroy", self.name])
 
-    def snapshot(self) -> None:
-        """Create and mount snapshot."""
-        run(["zfs", "snapshot", self.name], check=True)
-
-        if not self.path.exists():
-            self.path.mkdir()
-        run(["mount", "-t", "zfs", self.name, self.path], check=True)
+    def mount(self) -> None:
+        run_cmd(["mkdir", "-p", str(self.path)])
+        run_cmd(["mount", "-t", "zfs", self.name, str(self.path)])
 
 
 class SnapshotManager:
     """Manages a collection of ZFS snapshots, creating and then cleaning them up when finished."""
 
-    def __init__(self, zpool: ZpoolConfig, services: list[str], dry_run: bool):
+    def __init__(self, zpool: ZpoolConfig):
         self.snapshots = [
             Snapshot(name, zpool.name, zpool.directory) for name in zpool.datasets
         ]
-        self.services = services
-        self.dry_run = dry_run
 
     def __enter__(self):
-        # stop all the services before
-        if len(self.services) != 0:
-            logger.debug(f"Stopping services: {self.services}")
-            if not self.dry_run:
-                run(["systemctl", "stop", *self.services], check=True)
-                logger.info("Stopped services")
-
-        logger.debug(f"Creating snapshots: {[str(s) for s in self.snapshots]}")
-        if not self.dry_run:
-            for s in self.snapshots:
-                s.cleanup()
-                s.snapshot()
-            logger.info("Created snapshots")
-
-        # create long-term snapshots for local recovery
-        logger.debug("Creating long-term snapshots")
-        if not self.dry_run:
-            run(["systemctl", "start", "sanoid.service"], check=True)
-            logger.info("Created long-term snapshots")
-
-        # start all the services after
-        if len(self.services) != 0:
-            logger.debug(f"Starting services: {self.services}")
-            if not self.dry_run:
-                run(["systemctl", "start", *self.services], check=True)
-                logger.info("Started services")
-
+        # leftovers from an interrupted run
+        for s in self.snapshots:
+            s.cleanup()
         return self
 
     def __exit__(self, exc_type, exc_value, exc_tb) -> None:
-        logger.debug(f"Cleaning up snapshots: {[str(s) for s in self.snapshots]}")
-        if not self.dry_run:
-            for s in self.snapshots:
+        failed = []
+        for s in self.snapshots:
+            try:
                 s.cleanup()
-            logger.info("Cleaned up snapshots")
+            except CalledProcessError as e:
+                logger.error(f"Failed to clean up {s.name}: {e}")
+                failed.append(s.name)
+        # an error already in flight is the one worth reporting
+        if failed and exc_type is None:
+            raise RuntimeError(f"Failed to clean up snapshots: {failed}")
+
+    def create(self) -> None:
+        # one command, so all datasets are snapshotted atomically
+        run_cmd(["zfs", "snapshot", *(s.name for s in self.snapshots)])
+        # create long-term snapshots for local recovery
+        run_cmd(["systemctl", "start", "sanoid.service"])
+
+    def mount(self) -> None:
+        for s in self.snapshots:
+            s.mount()

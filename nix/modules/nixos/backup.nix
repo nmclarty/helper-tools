@@ -44,8 +44,7 @@ in
           description = "The directory that snapshots will be mounted into for backup.";
         };
         datasets = mkOption {
-          type = with types; listOf str;
-          default = [ ];
+          type = with types; nonEmptyListOf str;
           description = "A list of zfs datasets that will be backed up.";
         };
       };
@@ -60,6 +59,7 @@ in
         sanoid.serviceConfig.Type = "oneshot";
         backup = {
           description = "Snapshot disks and backup";
+          restartIfChanged = false;
           after = [
             "network-online.target"
             "zfs.target"
