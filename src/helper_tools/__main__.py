@@ -16,6 +16,7 @@ from pydantic_settings import (
 )
 
 from .backup.command import Backup
+from .images.command import Images
 from .motd.command import Motd
 from .secret.command import Secret
 
@@ -54,6 +55,7 @@ class Settings(BaseSettings):
     log_level: str = Field(description="logging level to use", default="INFO")
 
     backup: CliSubCommand[Backup]
+    images: CliSubCommand[Images]
     motd: CliSubCommand[Motd]
     secret: CliSubCommand[Secret]
 
